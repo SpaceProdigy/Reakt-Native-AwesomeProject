@@ -26,8 +26,16 @@ export default function LoginScreen() {
     Roboto_500Medium,
     Roboto_700Bold,
   });
-
+  const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
+
+  const handleInputFocus = (inputName) => {
+    setActiveInput(inputName);
+  };
+
+  const handleInputBlur = () => {
+    setActiveInput(null);
+  };
 
   const handleClick = () => {
     setIsShowPasword(isShowPassword ? false : true);
@@ -53,7 +61,12 @@ export default function LoginScreen() {
             <Text style={styles.title}>Увійти</Text>
             <View>
               <TextInput
-                style={styles.input}
+                onFocus={() => handleInputFocus("email")}
+                onBlur={handleInputBlur}
+                style={{
+                  ...styles.input,
+                  borderColor: activeInput === "email" ? "#FF6C00" : "#E8E8E8",
+                }}
                 placeholder="Адреса електронної пошти"
                 keyboardType="email-address"
                 placeholderTextColor="#BDBDBD"
@@ -70,8 +83,14 @@ export default function LoginScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TextInput
+                  onFocus={() => handleInputFocus("password")}
+                  onBlur={handleInputBlur}
+                  style={{
+                    ...styles.input,
+                    borderColor:
+                      activeInput === "password" ? "#FF6C00" : "#E8E8E8",
+                  }}
                   secureTextEntry={isShowPassword}
-                  style={styles.input}
                   placeholderTextColor="#BDBDBD"
                   autoComplete="password"
                   placeholder="Пароль"
@@ -124,7 +143,7 @@ const styles = StyleSheet.create({
   wrapperShowPassword: {
     position: "absolute",
     right: 16,
-    top: "50%",
+    top: "45%",
     zIndex: 1,
   },
   showPasswordText: {
@@ -139,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F6",
     height: 50,
     borderWidth: 1,
-    borderColor: "#BDBDBD",
+
     borderRadius: 10,
     padding: 16,
     marginTop: 16,

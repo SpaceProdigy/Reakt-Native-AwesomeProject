@@ -28,7 +28,16 @@ export default function RegistrationScreen() {
     Roboto_700Bold,
   });
 
+  const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
+
+  const handleInputFocus = (inputName) => {
+    setActiveInput(inputName);
+  };
+
+  const handleInputBlur = () => {
+    setActiveInput(null);
+  };
 
   const handleClick = () => {
     setIsShowPasword(isShowPassword ? false : true);
@@ -59,18 +68,29 @@ export default function RegistrationScreen() {
             <Text style={styles.title}>Реєстрація</Text>
             <View>
               <TextInput
-                style={styles.input}
+                onFocus={() => handleInputFocus("login")}
+                onBlur={handleInputBlur}
+                style={{
+                  ...styles.input,
+                  borderColor: activeInput === "login" ? "#FF6C00" : "#E8E8E8",
+                }}
                 placeholderTextColor="#BDBDBD"
                 placeholder="Логін"
                 maxLength={20}
               />
               <TextInput
-                style={styles.input}
+                onFocus={() => handleInputFocus("email")}
+                onBlur={handleInputBlur}
+                style={{
+                  ...styles.input,
+                  borderColor: activeInput === "email" ? "#FF6C00" : "#E8E8E8",
+                }}
                 placeholder="Адреса електронної пошти"
                 keyboardType="email-address"
                 placeholderTextColor="#BDBDBD"
                 maxLength={30}
               />
+
               <View>
                 <TouchableOpacity
                   onPress={handleClick}
@@ -81,8 +101,14 @@ export default function RegistrationScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TextInput
+                  onFocus={() => handleInputFocus("password")}
+                  onBlur={handleInputBlur}
+                  style={{
+                    ...styles.input,
+                    borderColor:
+                      activeInput === "password" ? "#FF6C00" : "#E8E8E8",
+                  }}
                   secureTextEntry={isShowPassword}
-                  style={styles.input}
                   placeholderTextColor="#BDBDBD"
                   autoComplete="password"
                   placeholder="Пароль"
