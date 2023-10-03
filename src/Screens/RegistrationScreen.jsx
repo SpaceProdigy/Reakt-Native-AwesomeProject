@@ -7,6 +7,8 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import AppLoading from "expo-app-loading";
 import { AntDesign } from "@expo/vector-icons";
@@ -27,7 +29,9 @@ export default function RegistrationScreen() {
     Roboto_500Medium,
     Roboto_700Bold,
   });
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [login, setLogin] = useState("");
   const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
 
@@ -43,90 +47,111 @@ export default function RegistrationScreen() {
     setIsShowPasword(isShowPassword ? false : true);
   };
 
+  const hendleInputActiveStyle = (value) => {
+    return {
+      borderColor: activeInput === value ? "#FF6C00" : "#E8E8E8",
+      backgroundColor: activeInput === value ? "#FFFFFF" : "#F6F6F6",
+    };
+  };
+
   if (!fontsLoaded) {
     return <AppLoading />;
   }
+  const onPressButton = () => {
+    console.log(
+      `Email:${email}
+     Password:${password}
+     Login:${login}
+     `
+    );
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={-150}
-    >
-      <ImageBackground
-        source={image}
-        resizeMode="cover"
-        style={styles.mainBackground}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={-150}
       >
-        <View style={styles.wrapper}>
-          <View style={styles.avatarBox}>
-            <TouchableOpacity style={styles.iconAdd}>
-              <AntDesign name="pluscircleo" size={25} color="#FF6C00" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.box}>
-            <Text style={styles.title}>Реєстрація</Text>
-            <View>
-              <TextInput
-                onFocus={() => handleInputFocus("login")}
-                onBlur={handleInputBlur}
-                style={{
-                  ...styles.input,
-                  borderColor: activeInput === "login" ? "#FF6C00" : "#E8E8E8",
-                }}
-                placeholderTextColor="#BDBDBD"
-                placeholder="Логін"
-                maxLength={20}
-              />
-              <TextInput
-                onFocus={() => handleInputFocus("email")}
-                onBlur={handleInputBlur}
-                style={{
-                  ...styles.input,
-                  borderColor: activeInput === "email" ? "#FF6C00" : "#E8E8E8",
-                }}
-                placeholder="Адреса електронної пошти"
-                keyboardType="email-address"
-                placeholderTextColor="#BDBDBD"
-                maxLength={30}
-              />
-
+        <ImageBackground
+          source={image}
+          resizeMode="cover"
+          style={styles.mainBackground}
+        >
+          <View style={styles.wrapper}>
+            <View style={styles.avatarBox}>
+              <TouchableOpacity style={styles.iconAdd}>
+                <AntDesign name="pluscircleo" size={25} color="#FF6C00" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.box}>
+              <Text style={styles.title}>Реєстрація</Text>
               <View>
-                <TouchableOpacity
-                  onPress={handleClick}
-                  style={styles.wrapperShowPassword}
-                >
-                  <Text style={styles.showPasswordText}>
-                    {isShowPassword ? "Показати" : "Cховати"}
-                  </Text>
-                </TouchableOpacity>
                 <TextInput
-                  onFocus={() => handleInputFocus("password")}
+                  onFocus={() => handleInputFocus("login")}
                   onBlur={handleInputBlur}
                   style={{
                     ...styles.input,
-                    borderColor:
-                      activeInput === "password" ? "#FF6C00" : "#E8E8E8",
+                    ...hendleInputActiveStyle("login"),
                   }}
-                  secureTextEntry={isShowPassword}
+                  value={login}
+                  onChangeText={setLogin}
                   placeholderTextColor="#BDBDBD"
-                  autoComplete="password"
-                  placeholder="Пароль"
+                  placeholder="Логін"
                   maxLength={20}
                 />
+                <TextInput
+                  onFocus={() => handleInputFocus("email")}
+                  onBlur={handleInputBlur}
+                  style={{
+                    ...styles.input,
+                    ...hendleInputActiveStyle("email"),
+                  }}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Адреса електронної пошти"
+                  keyboardType="email-address"
+                  placeholderTextColor="#BDBDBD"
+                  maxLength={30}
+                />
+                <View>
+                  <TouchableOpacity
+                    onPress={handleClick}
+                    style={styles.wrapperShowPassword}
+                  >
+                    <Text style={styles.showPasswordText}>
+                      {isShowPassword ? "Показати" : "Cховати"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TextInput
+                    onFocus={() => handleInputFocus("password")}
+                    onBlur={handleInputBlur}
+                    style={{
+                      ...styles.input,
+                      ...hendleInputActiveStyle("password"),
+                    }}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={isShowPassword}
+                    placeholderTextColor="#BDBDBD"
+                    autoComplete="password"
+                    placeholder="Пароль"
+                    maxLength={20}
+                  />
+                </View>
               </View>
-            </View>
 
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.textButton}>Зареєстуватися</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.link}>Вже є акаунт? Увійти</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={onPressButton}>
+                <Text style={styles.textButton}>Зареєстуватися</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={styles.link}>Вже є акаунт? Увійти</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -185,13 +210,12 @@ const styles = StyleSheet.create({
   input: {
     fontFamily: "Roboto_400Regular",
     fontSize: 16,
-    backgroundColor: "#F6F6F6",
     height: 50,
     borderWidth: 1,
-    borderColor: "#BDBDBD",
     borderRadius: 10,
     padding: 16,
     marginTop: 16,
+    textDecorationLine: "none",
   },
   button: {
     marginTop: 43,

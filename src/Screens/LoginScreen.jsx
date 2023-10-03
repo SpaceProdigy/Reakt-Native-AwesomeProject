@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   View,
   Text,
@@ -7,6 +8,8 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import AppLoading from "expo-app-loading";
 import {
@@ -26,6 +29,8 @@ export default function LoginScreen() {
     Roboto_500Medium,
     Roboto_700Bold,
   });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
 
@@ -41,77 +46,96 @@ export default function LoginScreen() {
     setIsShowPasword(isShowPassword ? false : true);
   };
 
+  const hendleInputActiveStyle = (value) => {
+    return {
+      borderColor: activeInput === value ? "#FF6C00" : "#E8E8E8",
+      backgroundColor: activeInput === value ? "#FFFFFF" : "#F6F6F6",
+    };
+  };
+
+  const onPressButton = () => {
+    console.log(
+      `Email:${email}
+     Password:${password}`
+    );
+  };
+
   if (!fontsLoaded) {
     return <AppLoading />;
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={-210}
-    >
-      <ImageBackground
-        source={image}
-        resizeMode="cover"
-        style={styles.mainBackground}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={-210}
       >
-        <View style={styles.wrapper}>
-          <View style={styles.box}>
-            <Text style={styles.title}>Увійти</Text>
-            <View>
-              <TextInput
-                onFocus={() => handleInputFocus("email")}
-                onBlur={handleInputBlur}
-                style={{
-                  ...styles.input,
-                  borderColor: activeInput === "email" ? "#FF6C00" : "#E8E8E8",
-                }}
-                placeholder="Адреса електронної пошти"
-                keyboardType="email-address"
-                placeholderTextColor="#BDBDBD"
-                maxLength={30}
-              />
-
+        <ImageBackground
+          source={image}
+          resizeMode="cover"
+          style={styles.mainBackground}
+        >
+          <View style={styles.wrapper}>
+            <View style={styles.box}>
+              <Text style={styles.title}>Увійти</Text>
               <View>
-                <TouchableOpacity
-                  onPress={handleClick}
-                  style={styles.wrapperShowPassword}
-                >
-                  <Text style={styles.showPasswordText}>
-                    {isShowPassword ? "Показати" : "Cховати"}
-                  </Text>
-                </TouchableOpacity>
                 <TextInput
-                  onFocus={() => handleInputFocus("password")}
+                  onFocus={() => handleInputFocus("email")}
                   onBlur={handleInputBlur}
                   style={{
                     ...styles.input,
-                    borderColor:
-                      activeInput === "password" ? "#FF6C00" : "#E8E8E8",
+                    ...hendleInputActiveStyle("email"),
                   }}
-                  secureTextEntry={isShowPassword}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Адреса електронної пошти"
+                  keyboardType="email-address"
                   placeholderTextColor="#BDBDBD"
-                  autoComplete="password"
-                  placeholder="Пароль"
-                  maxLength={20}
+                  maxLength={30}
                 />
-              </View>
-            </View>
 
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.textButton}>Увійти</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.link}>
-                Немає акаунту?
-                <Text style={styles.linkAcent}>Зареєструватися</Text>
-              </Text>
-            </TouchableOpacity>
+                <View>
+                  <TouchableOpacity
+                    onPress={handleClick}
+                    style={styles.wrapperShowPassword}
+                  >
+                    <Text style={styles.showPasswordText}>
+                      {isShowPassword ? "Показати" : "Cховати"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TextInput
+                    onFocus={() => handleInputFocus("password")}
+                    onBlur={handleInputBlur}
+                    style={{
+                      ...styles.input,
+                      ...hendleInputActiveStyle("password"),
+                    }}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={isShowPassword}
+                    placeholderTextColor="#BDBDBD"
+                    autoComplete="password"
+                    placeholder="Пароль"
+                    maxLength={20}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity style={styles.button} onPress={onPressButton}>
+                <Text style={styles.textButton}>Увійти</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={styles.link}>
+                  Немає акаунту?
+                  <Text style={styles.linkAcent}>Зареєструватися</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -155,13 +179,12 @@ const styles = StyleSheet.create({
   input: {
     fontFamily: "Roboto_400Regular",
     fontSize: 16,
-    backgroundColor: "#F6F6F6",
     height: 50,
     borderWidth: 1,
-
     borderRadius: 10,
     padding: 16,
     marginTop: 16,
+    textDecorationLine: "none",
   },
   button: {
     marginTop: 43,
