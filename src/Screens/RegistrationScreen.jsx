@@ -64,6 +64,9 @@ export default function RegistrationScreen() {
      Login:${login}
      `
     );
+    setLogin("");
+    setEmail("");
+    setPassword("");
   };
 
   return (
@@ -114,6 +117,7 @@ export default function RegistrationScreen() {
                   placeholderTextColor="#BDBDBD"
                   maxLength={30}
                 />
+
                 <View>
                   <TouchableOpacity
                     onPress={handleClick}
@@ -137,6 +141,7 @@ export default function RegistrationScreen() {
                     autoComplete="password"
                     placeholder="Пароль"
                     maxLength={20}
+                    autoCapitalize="none"
                   />
                 </View>
               </View>
@@ -198,7 +203,7 @@ const styles = StyleSheet.create({
   wrapperShowPassword: {
     position: "absolute",
     right: 16,
-    top: "50%",
+    top: "45%",
     zIndex: 1,
   },
   showPasswordText: {

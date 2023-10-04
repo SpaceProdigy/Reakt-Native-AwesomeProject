@@ -58,6 +58,8 @@ export default function LoginScreen() {
       `Email:${email}
      Password:${password}`
     );
+    setEmail("");
+    setPassword("");
   };
 
   if (!fontsLoaded) {
@@ -118,6 +120,7 @@ export default function LoginScreen() {
                     autoComplete="password"
                     placeholder="Пароль"
                     maxLength={20}
+                    autoCapitalize="none"
                   />
                 </View>
               </View>
