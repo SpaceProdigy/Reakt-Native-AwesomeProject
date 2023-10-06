@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export default function PostsScreen() {
+export default function ProfileScreen() {
   return (
     <>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>PostsScreen!</Text>
+        <Text>ProfileScreen!</Text>
       </View>
     </>
   );

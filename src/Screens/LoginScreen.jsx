@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -11,7 +12,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
   Roboto_300Light,
@@ -21,6 +22,7 @@ import {
 } from "@expo-google-fonts/roboto";
 
 import image from "../images/Photo-BG.jpg";
+SplashScreen.preventAutoHideAsync();
 
 export default function LoginScreen() {
   const [fontsLoaded] = useFonts({
@@ -29,10 +31,13 @@ export default function LoginScreen() {
     Roboto_500Medium,
     Roboto_700Bold,
   });
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
+
+  const { params } = useRoute();
 
   const handleInputFocus = (inputName) => {
     setActiveInput(inputName);
@@ -60,81 +65,91 @@ export default function LoginScreen() {
     );
     setEmail("");
     setPassword("");
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Home" }],
+    });
   };
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
+        onLayout={onLayoutRootView}
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={-210}
+        keyboardVerticalOffset={-220}
       >
         <ImageBackground
           source={image}
           resizeMode="cover"
           style={styles.mainBackground}
         >
-          <View style={styles.wrapper}>
-            <View style={styles.box}>
-              <Text style={styles.title}>Увійти</Text>
+          <View style={styles.box}>
+            <Text style={styles.title}>Увійти</Text>
+            <View>
+              <TextInput
+                onFocus={() => handleInputFocus("email")}
+                onBlur={handleInputBlur}
+                style={{
+                  ...styles.input,
+                  ...hendleInputActiveStyle("email"),
+                }}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Адреса електронної пошти"
+                keyboardType="email-address"
+                placeholderTextColor="#BDBDBD"
+                maxLength={30}
+              />
+
               <View>
+                <TouchableOpacity
+                  onPress={handleClick}
+                  style={styles.wrapperShowPassword}
+                >
+                  <Text style={styles.showPasswordText}>
+                    {isShowPassword ? "Показати" : "Cховати"}
+                  </Text>
+                </TouchableOpacity>
                 <TextInput
-                  onFocus={() => handleInputFocus("email")}
+                  onFocus={() => handleInputFocus("password")}
                   onBlur={handleInputBlur}
                   style={{
                     ...styles.input,
-                    ...hendleInputActiveStyle("email"),
+                    ...hendleInputActiveStyle("password"),
                   }}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Адреса електронної пошти"
-                  keyboardType="email-address"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={isShowPassword}
                   placeholderTextColor="#BDBDBD"
-                  maxLength={30}
+                  autoComplete="password"
+                  placeholder="Пароль"
+                  maxLength={20}
+                  autoCapitalize="none"
                 />
-
-                <View>
-                  <TouchableOpacity
-                    onPress={handleClick}
-                    style={styles.wrapperShowPassword}
-                  >
-                    <Text style={styles.showPasswordText}>
-                      {isShowPassword ? "Показати" : "Cховати"}
-                    </Text>
-                  </TouchableOpacity>
-                  <TextInput
-                    onFocus={() => handleInputFocus("password")}
-                    onBlur={handleInputBlur}
-                    style={{
-                      ...styles.input,
-                      ...hendleInputActiveStyle("password"),
-                    }}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={isShowPassword}
-                    placeholderTextColor="#BDBDBD"
-                    autoComplete="password"
-                    placeholder="Пароль"
-                    maxLength={20}
-                    autoCapitalize="none"
-                  />
-                </View>
               </View>
-
-              <TouchableOpacity style={styles.button} onPress={onPressButton}>
-                <Text style={styles.textButton}>Увійти</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.link}>
-                  Немає акаунту?
-                  <Text style={styles.linkAcent}>Зареєструватися</Text>
-                </Text>
-              </TouchableOpacity>
             </View>
+
+            <TouchableOpacity style={styles.button} onPress={onPressButton}>
+              <Text style={styles.textButton}>Увійти</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Registration")}
+            >
+              <Text style={styles.link}>
+                Немає акаунту?
+                <Text style={styles.linkAcent}>Зареєструватися</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
         </ImageBackground>
       </KeyboardAvoidingView>

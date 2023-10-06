@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -10,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
 import { AntDesign } from "@expo/vector-icons";
 import {
   useFonts,
@@ -21,6 +22,7 @@ import {
 } from "@expo-google-fonts/roboto";
 
 import image from "../images/Photo-BG.jpg";
+SplashScreen.preventAutoHideAsync();
 
 export default function RegistrationScreen() {
   const [fontsLoaded] = useFonts({
@@ -29,6 +31,7 @@ export default function RegistrationScreen() {
     Roboto_500Medium,
     Roboto_700Bold,
   });
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [login, setLogin] = useState("");
@@ -54,9 +57,6 @@ export default function RegistrationScreen() {
     };
   };
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
-  }
   const onPressButton = () => {
     console.log(
       `Email:${email}
@@ -67,11 +67,25 @@ export default function RegistrationScreen() {
     setLogin("");
     setEmail("");
     setPassword("");
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Home" }],
+    });
   };
 
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
+        onLayout={onLayoutRootView}
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={-150}
@@ -149,7 +163,7 @@ export default function RegistrationScreen() {
               <TouchableOpacity style={styles.button} onPress={onPressButton}>
                 <Text style={styles.textButton}>Зареєстуватися</Text>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.link}>Вже є акаунт? Увійти</Text>
               </TouchableOpacity>
             </View>
