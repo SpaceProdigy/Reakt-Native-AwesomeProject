@@ -21,7 +21,7 @@ import {
   Roboto_700Bold,
 } from "@expo-google-fonts/roboto";
 
-import image from "../images/Photo-BG.jpg";
+import image from "../../images/Photo-BG.jpg";
 SplashScreen.preventAutoHideAsync();
 
 export default function LoginScreen() {
@@ -143,7 +143,12 @@ export default function LoginScreen() {
               <Text style={styles.textButton}>Увійти</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => navigation.navigate("Registration")}
+              onPress={() =>
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "Registration" }],
+                })
+              }
             >
               <Text style={styles.link}>
                 Немає акаунту?

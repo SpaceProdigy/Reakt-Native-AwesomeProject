@@ -1,0 +1,44 @@
+{
+  "images": [
+    {
+      "id": 3,
+      "url": "https://images.pexels.com/photos/220444/pexels-photo-220444.jpeg",
+      "title": "Закат в горах",
+      "likes": 42,
+      "comments": 8,
+      "location": "Rio de Janeiro"
+    },
+    {
+      "id": 4,
+      "url": "https://images.pexels.com/photos/414102/pexels-photo-414102.jpeg",
+      "title": "Морський захід сонця",
+      "likes": 56,
+      "comments": 12,
+      "location": "Miami"
+    },
+    {
+      "id": 5,
+      "url": "https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg",
+      "title": "Ніч у місті",
+      "likes": 34,
+      "comments": 7,
+      "location": "New York"
+    },
+    {
+      "id": 9,
+      "url": "https://images.pexels.com/photos/803226/pexels-photo-803226.jpeg",
+      "title": "Захід сонця над морем",
+      "likes": 65,
+      "comments": 11,
+      "location": "Los Angeles"
+    },
+    {
+      "id": 10,
+      "url": "https://images.pexels.com/photos/276194/pexels-photo-276194.jpeg",
+      "title": "Гірський краєвид",
+      "likes": 28,
+      "comments": 5,
+      "location": "Chicago"
+    }
+  ]
+}
