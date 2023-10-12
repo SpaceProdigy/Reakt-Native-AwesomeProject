@@ -61,7 +61,9 @@ const ListPosts = () => {
             comments={item.comments}
           />
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
+        extraData={(item) => item.id}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
