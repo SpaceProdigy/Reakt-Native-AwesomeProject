@@ -119,7 +119,14 @@ const BottomNavigator = () => {
             display: "none",
           },
           headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "PostsScreen" }],
+                })
+              }
+            >
               <AntDesign
                 style={styles.iconBack}
                 name="arrowleft"

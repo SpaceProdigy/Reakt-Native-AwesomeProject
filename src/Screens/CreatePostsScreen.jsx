@@ -21,9 +21,13 @@ import {
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
+
 import SvgTrashIcon from "../images/svg/SvgTreshIcon";
 import SvgMapLocation from "../images/svg/SvgMapLocation";
 import { useNavigation } from "@react-navigation/native";
+import addressGeocoded from "../utility/addressGeocoded/addressGeocoded";
 
 export default function PostsScreen() {
   const [fontsLoaded] = useFonts({
@@ -34,13 +38,15 @@ export default function PostsScreen() {
   });
   const navigation = useNavigation();
   const [photoName, setPhotoName] = useState("");
-  const [map, setMap] = useState("");
+
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [fotoUri, setFotoUri] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(true);
+  const [status, requestPermission] = Location.useForegroundPermissions();
+  const [mapInput, setMapInput] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -48,6 +54,15 @@ export default function PostsScreen() {
       await MediaLibrary.requestPermissionsAsync();
 
       setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        console.log("Permission to access location was denied");
+      }
     })();
   }, []);
 
@@ -64,10 +79,10 @@ export default function PostsScreen() {
   const onPressButton = () => {
     console.log(
       `PhotoName:${photoName}
-     Geolocation:${map}
+     Geolocation:${mapInput}
      `
     );
-    setMap("");
+    setMapInput("");
     setPhotoName("");
     setFotoUri(null);
     navigation.reset({
@@ -77,7 +92,7 @@ export default function PostsScreen() {
   };
 
   const onPressTrash = async () => {
-    setMap("");
+    setMapInput("");
     setPhotoName("");
     setFotoUri(null);
     setRefreshKey((prevKey) => prevKey + 1);
@@ -96,6 +111,7 @@ export default function PostsScreen() {
         setImageLoaded(false);
         setRefreshKey((prevKey) => prevKey + 1);
         setFotoUri(null);
+        setMapInput("");
         setImageLoaded(true);
         return;
       }
@@ -105,6 +121,11 @@ export default function PostsScreen() {
         await MediaLibrary.createAssetAsync(photo.uri);
         setFotoUri(photo.uri);
         setImageLoaded(true);
+        let { coords } = await Location.getCurrentPositionAsync();
+        const { latitude, longitude } = coords;
+        const address = await addressGeocoded(latitude, longitude);
+        const { region, country } = address;
+        setMapInput(address ? `${region} Region, ${country}` : "");
       }
     } catch (error) {
       console.error("Помилка при спробі зробити снімок:", error.message);
@@ -195,8 +216,8 @@ export default function PostsScreen() {
             </View>
 
             <TextInput
-              value={map}
-              onChangeText={setMap}
+              value={mapInput}
+              onChangeText={setMapInput}
               style={styles.input}
               placeholder="Місцевість..."
               keyboardType="email-address"
@@ -209,14 +230,14 @@ export default function PostsScreen() {
             style={{
               ...styles.button,
               backgroundColor:
-                map && photoName && fotoUri ? "#FF6C00" : "#F6F6F6",
+                mapInput && photoName && fotoUri ? "#FF6C00" : "#F6F6F6",
             }}
-            disabled={!map || !photoName || !fotoUri}
+            disabled={!mapInput || !photoName || !fotoUri}
           >
             <Text
               style={{
                 ...styles.textButton,
-                color: map && photoName ? "#FFFFFF" : "#BDBDBD",
+                color: mapInput && photoName && fotoUri ? "#FFFFFF" : "#BDBDBD",
               }}
             >
               Опубліковати
@@ -224,7 +245,7 @@ export default function PostsScreen() {
           </TouchableOpacity>
           <View style={styles.trashWrapper}>
             <TouchableOpacity
-              disabled={!map && !photoName && !fotoUri}
+              disabled={!mapInput && !photoName && !fotoUri}
               onPress={onPressTrash}
             >
               <View style={styles.trashBox}>
@@ -233,6 +254,27 @@ export default function PostsScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {/* <View style={styles.container}>
+          <MapView
+            style={styles.mapStyle}
+            initialRegion={{
+              ...location,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+            mapType="standard"
+            minZoomLevel={10}
+            showsUserLocation={true}
+          >
+            {location && (
+              <Marker
+                title="I am here"
+                coordinate={location}
+                description="Hello"
+              />
+            )}
+          </MapView>
+        </View> */}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
