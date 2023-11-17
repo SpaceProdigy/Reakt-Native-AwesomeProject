@@ -1,13 +1,44 @@
 {
   "images": [
+{
+  "id": 3,
+  "url": "https://images.pexels.com/photos/220444/pexels-photo-220444.jpeg",
+  "title": "Закат в горах",
+  "likes": 42,
+  "comments": [
+    {
+      "id": 1,
+      "text": "Це фото просто заворожує! Відчуття, ніби опинився в іншому світі. Дуже вдячний за можливість подивитися на таку красу.",
+      "user": {
+        "name": "Фотоцінувач_007",
+        "avatar": "https://i.pravatar.cc/150?img=1"
+      },
+      "date": "09 червня, 2020",
+      "time": "09:14"
+    },
+    {
+      "id": 2,
+      "text": "Вражаюче! Кожен куток цього кадру наповнений емоціями. Чудова робота автора!",
+      "user": {
+        "name": "Шанувальник_Фотомистецтва",
+        "avatar": "https://i.pravatar.cc/150?img=2"
+      },
+      "date": "09 червня, 2020",
+      "time": "10:30"
+    },
     {
       "id": 3,
-      "url": "https://images.pexels.com/photos/220444/pexels-photo-220444.jpeg",
-      "title": "Закат в горах",
-      "likes": 42,
-      "comments": 8,
-      "location": "Rio de Janeiro"
-    },
+      "text": "Не можу відвести погляд. Така гармонія природи, запечатлена на цьому знімку, робить його неповторним. Бажаю автору подальших успіхів!",
+      "user": {
+        "name": "Естет_99",
+        "avatar": "https://i.pravatar.cc/150?img=3"
+      },
+      "date": "09 червня, 2020",
+      "time": "12:15"
+    }
+  ],
+  "location": "Rio de Janeiro"
+},
     {
       "id": 4,
       "url": "https://images.pexels.com/photos/414102/pexels-photo-414102.jpeg",
