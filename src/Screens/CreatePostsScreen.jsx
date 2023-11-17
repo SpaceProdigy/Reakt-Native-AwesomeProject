@@ -21,7 +21,6 @@ import {
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 
-import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
 import SvgTrashIcon from "../images/svg/SvgTreshIcon";
@@ -122,6 +121,7 @@ export default function PostsScreen() {
         setFotoUri(photo.uri);
         setImageLoaded(true);
         let { coords } = await Location.getCurrentPositionAsync();
+        console.log(coords);
         const { latitude, longitude } = coords;
         const address = await addressGeocoded(latitude, longitude);
         const { region, country } = address;
@@ -254,27 +254,6 @@ export default function PostsScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        {/* <View style={styles.container}>
-          <MapView
-            style={styles.mapStyle}
-            initialRegion={{
-              ...location,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            mapType="standard"
-            minZoomLevel={10}
-            showsUserLocation={true}
-          >
-            {location && (
-              <Marker
-                title="I am here"
-                coordinate={location}
-                description="Hello"
-              />
-            )}
-          </MapView>
-        </View> */}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

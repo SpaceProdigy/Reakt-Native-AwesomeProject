@@ -1,105 +1,160 @@
-import React from "react";
+import React, { useState } from "react";
+import { Keyboard, TouchableOpacity } from "react-native";
 import {
   View,
-  Text,
   StyleSheet,
   Image,
   SafeAreaView,
   FlatList,
+  TextInput,
 } from "react-native";
 
 import {
   useFonts,
-  Roboto_300Light,
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-} from "@expo-google-fonts/roboto";
+  Inter_400Regular,
+  Inter_500Medium,
+} from "@expo-google-fonts/inter";
+
+import { AntDesign } from "@expo/vector-icons";
+
+import users from "../data/usersData/users.json";
+import Comments from "../components/Comments";
+import { TouchableWithoutFeedback } from "react-native";
 
 export default function CommentsScreen({ route }) {
-  const [fontsLoaded] = useFonts({
-    Roboto_300Light,
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold,
+  const [comment, setComment] = useState(null);
+  const [activeInput, setActiveInput] = useState(null);
+
+  let [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
   });
+
   if (!fontsLoaded) {
     return null;
   }
+
   const { uri, comments } = route.params;
 
-  return (
-    <>
-      <SafeAreaView style={styles.mainWrapper}>
-        <Image source={{ uri: uri }} style={styles.image} />
+  const handleInputFocus = (inputName) => {
+    setActiveInput(inputName);
+  };
 
-        <FlatList
-          style={styles.list}
-          data={comments}
-          renderItem={({ item }) => (
-            <View style={styles.wrapperComment}>
-              <Image source={{ uri: item.user.avatar }} style={styles.avatar} />
-              <View style={styles.wrapperText}>
-                <Text style={styles.text}>{item.text}</Text>
-                <Text style={styles.time}>{`${item.date} | ${item.time}`}</Text>
-              </View>
+  const handleInputBlur = () => {
+    setActiveInput(null);
+  };
+  const hendleInputActiveStyle = (value) => {
+    return {
+      borderColor: activeInput === value ? "#FF6C00" : "#E8E8E8",
+      backgroundColor: activeInput === value ? "#FFFFFF" : "#E8E8E8",
+    };
+  };
+
+  const onPressButton = () => {
+    console.log(
+      `Comment:${comment}
+    
+     `
+    );
+    setComment(null);
+    setActiveInput(null);
+    Keyboard.dismiss();
+  };
+
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.mainWrapper}>
+        <Image source={{ uri: uri }} style={styles.image} />
+        <SafeAreaView style={styles.listWrapper}>
+          <FlatList
+            data={comments}
+            renderItem={({ item, index }) => {
+              return (
+                <Comments
+                  index={index}
+                  userId={users[0].id}
+                  commetnId={item.user.id}
+                  avatar={item.user.avatar}
+                  text={item.text}
+                  date={item.date}
+                  time={item.time}
+                />
+              );
+            }}
+            keyExtractor={(item) => item.id}
+            extraData={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+          />
+        </SafeAreaView>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            onFocus={() => handleInputFocus("comment")}
+            onBlur={handleInputBlur}
+            style={{
+              ...styles.input,
+              ...hendleInputActiveStyle("comment"),
+            }}
+            value={comment}
+            onChangeText={setComment}
+            placeholder="Коментувати..."
+            placeholderTextColor="#BDBDBD"
+            maxLength={100}
+          />
+          <TouchableOpacity
+            onPress={onPressButton}
+            style={styles.iconButtonWrapper}
+          >
+            <View>
+              <AntDesign name="arrowup" size={18} color="#fff" />
             </View>
-          )}
-          keyExtractor={(item) => item.id}
-          extraData={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-        />
-      </SafeAreaView>
-    </>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   mainWrapper: {
+    flex: 1,
     marginHorizontal: 16,
     paddingTop: 32,
+    paddingBottom: 16,
   },
-  list: {
-    marginTop: 8,
-    marginBottom: 32,
-  },
-
-  wrapperComment: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginTop: 24,
-  },
-
   image: {
     height: 240,
     borderRadius: 8,
   },
-  avatar: {
-    marginRight: 16,
-    width: 28,
-    height: 28,
-    borderRadius: 50,
+
+  listWrapper: {
+    flex: 1,
+    paddingTop: 32,
+    marginBottom: 32,
+  },
+  inputWrapper: {
+    position: "relative",
   },
 
-  wrapperText: {
-    backgroundColor: "#00000008",
-    flex: 1,
+  input: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 16,
+    lineHeight: 19.36,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 40,
     padding: 16,
-    borderRadius: 6,
-    borderTopLeftRadius: 0,
+    textDecorationLine: "none",
   },
-  text: {
-    fontFamily: "Roboto_400Regular",
-    fontSize: 13,
-    lineHeight: 18,
-    color: "#212121",
-  },
-  time: {
-    marginTop: 8,
-    fontFamily: "Roboto_400Regular",
-    fontSize: 10,
-    lineHeight: 11.72,
-    color: "#BDBDBD",
-    textAlign: "right",
+
+  iconButtonWrapper: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 34,
+    height: 34,
+    backgroundColor: "#FF6C00",
+    borderRadius: 50,
   },
 });
