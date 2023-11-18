@@ -20,19 +20,32 @@ import { AntDesign } from "@expo/vector-icons";
 import users from "../data/usersData/users.json";
 import Comments from "../components/Comments";
 import { TouchableWithoutFeedback } from "react-native";
+import { KeyboardAvoidingView } from "react-native";
+import { Platform } from "react-native";
+
+const phrases = [
+  "Гарне фото...",
+  "Прекрасний кадр!",
+  "Вражаюча фотографія!",
+  "Чудовий момент!",
+  "Справжнє мистецтво!",
+  "Фантастичний знімок!",
+  "Бездоганно!",
+  "Прекрасний вибір ракурсу!",
+  "Чарівна атмосфера!",
+  "Дуже гарне світло!",
+];
 
 export default function CommentsScreen({ route }) {
-  const [comment, setComment] = useState(null);
-  const [activeInput, setActiveInput] = useState(null);
-
   let [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
   });
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  const [comment, setComment] = useState(null);
+  const [activeInput, setActiveInput] = useState(null);
+  const [emptyComment, setEmptyComment] = useState(null);
+  const [numExample, setNumExample] = useState(0);
 
   const { uri, comments } = route.params;
 
@@ -51,66 +64,95 @@ export default function CommentsScreen({ route }) {
   };
 
   const onPressButton = () => {
+    if (!comment || comment.trim() === "") {
+      setEmptyComment(true);
+      setComment(null);
+      if (numExample === phrases.length - 1) {
+        setNumExample(0);
+        return;
+      }
+      setNumExample((prevNum) => prevNum + 1);
+      return;
+    }
     console.log(
-      `Comment:${comment}
+      `Comment:${comment.trim()}
     
      `
     );
+    setEmptyComment(null);
     setComment(null);
     setActiveInput(null);
     Keyboard.dismiss();
   };
 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.mainWrapper}>
-        <Image source={{ uri: uri }} style={styles.image} />
-        <SafeAreaView style={styles.listWrapper}>
-          <FlatList
-            data={comments}
-            renderItem={({ item, index }) => {
-              return (
-                <Comments
-                  index={index}
-                  userId={users[0].id}
-                  commetnId={item.user.id}
-                  avatar={item.user.avatar}
-                  text={item.text}
-                  date={item.date}
-                  time={item.time}
-                />
-              );
-            }}
-            keyExtractor={(item) => item.id}
-            extraData={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-          />
-        </SafeAreaView>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            onFocus={() => handleInputFocus("comment")}
-            onBlur={handleInputBlur}
-            style={{
-              ...styles.input,
-              ...hendleInputActiveStyle("comment"),
-            }}
-            value={comment}
-            onChangeText={setComment}
-            placeholder="Коментувати..."
-            placeholderTextColor="#BDBDBD"
-            maxLength={100}
-          />
-          <TouchableOpacity
-            onPress={onPressButton}
-            style={styles.iconButtonWrapper}
-          >
-            <View>
-              <AntDesign name="arrowup" size={18} color="#fff" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+    <KeyboardAvoidingView
+      style={styles.mainWrapper}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={80}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <Image source={{ uri: uri }} style={styles.image} />
+          </TouchableWithoutFeedback>
+
+          <SafeAreaView style={styles.listWrapper}>
+            <FlatList
+              data={comments}
+              renderItem={({ item, index }) => {
+                return (
+                  <Comments
+                    index={index}
+                    userId={users[0].id}
+                    commetnId={item.user.id}
+                    avatar={item.user.avatar}
+                    text={item.text}
+                    date={item.date}
+                    time={item.time}
+                  />
+                );
+              }}
+              keyExtractor={(item) => item.id}
+              extraData={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="interactive"
+            />
+          </SafeAreaView>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              onFocus={() => handleInputFocus("comment")}
+              onBlur={handleInputBlur}
+              style={{
+                ...styles.input,
+                ...hendleInputActiveStyle("comment"),
+              }}
+              value={comment}
+              onChangeText={setComment}
+              placeholder={
+                emptyComment
+                  ? `Приклад: ${phrases[numExample]} `
+                  : "Коментувати..."
+              }
+              placeholderTextColor={emptyComment ? "#ff5454" : "#BDBDBD"}
+              maxLength={100}
+            />
+            <TouchableOpacity
+              onPress={onPressButton}
+              style={styles.iconButtonWrapper}
+            >
+              <View>
+                <AntDesign name="arrowup" size={18} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { GOOGLE_API_KEY } from "@env";
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 
 import MapView, { Marker } from "react-native-maps";
+import Loader from "../utility/Loader";
 
 export default function MapScreen({ route }) {
   const [coordinates, setCoordinates] = useState(null);
@@ -36,7 +37,7 @@ export default function MapScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      {coordinates && (
+      {coordinates ? (
         <MapView
           ref={mapRef}
           style={styles.mapStyle}
@@ -56,6 +57,8 @@ export default function MapScreen({ route }) {
             description="Hello"
           />
         </MapView>
+      ) : (
+        <Loader />
       )}
     </View>
   );

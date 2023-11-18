@@ -26,7 +26,7 @@ import * as Location from "expo-location";
 import SvgTrashIcon from "../images/svg/SvgTreshIcon";
 import SvgMapLocation from "../images/svg/SvgMapLocation";
 import { useNavigation } from "@react-navigation/native";
-import addressGeocoded from "../utility/addressGeocoded/addressGeocoded";
+import addressGeocoded from "../utility/addressGeocoded";
 
 export default function PostsScreen() {
   const [fontsLoaded] = useFonts({

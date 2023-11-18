@@ -1,13 +1,11 @@
 import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-const Loader = () => {
-  return (
-    <View style={[styles.container, styles.horizontal]}>
-      <ActivityIndicator size="large" color="#00ff00" />
-    </View>
-  );
-};
+const Loader = () => (
+  <View style={[styles.container, styles.horizontal]}>
+    <ActivityIndicator size="large" color="#111" />
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -15,8 +13,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   horizontal: {
-    flexDirection: "row",
-    justifyContent: "space-around",
     padding: 10,
   },
 });
