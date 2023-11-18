@@ -9,8 +9,9 @@ const ListPosts = () => {
     <SafeAreaView style={styles.container}>
       <FlatList
         data={DATA.images}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <Item
+            index={index}
             uri={item.url}
             title={item.title}
             location={item.location}

@@ -25,6 +25,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  user: { marginLeft: 16, marginTop: 32 },
+  user: { marginLeft: 16, marginTop: 32, marginBottom: 32 },
   list: { flex: 1 },
 });

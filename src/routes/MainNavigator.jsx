@@ -9,6 +9,7 @@ import RegistrationScreen from "../Screens/auth/RegistrationScreen";
 import LoginScreen from "../Screens/auth/LoginScreen";
 import Home from "../Screens/Home";
 import CommentsScreen from "../Screens/CommentsScreen";
+import MapScreen from "../Screens/MapScreen";
 
 const MainStack = createStackNavigator();
 
@@ -41,6 +42,28 @@ export default function MainNavigator() {
         component={CommentsScreen}
         options={{
           title: "Коментарі",
+          headerTintColor: "#212121",
+          headerTitleAlign: "center",
+          headerTitleStyle: styles.title,
+          headerStyle: styles.header,
+          headerTransparent: false,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <AntDesign
+                style={styles.iconBack}
+                name="arrowleft"
+                size={24}
+                color="rgba(33, 33, 33, 0.8)"
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <MainStack.Screen
+        name="MapScreen"
+        component={MapScreen}
+        options={{
+          title: "Локація публикації",
           headerTintColor: "#212121",
           headerTitleAlign: "center",
           headerTitleStyle: styles.title,
