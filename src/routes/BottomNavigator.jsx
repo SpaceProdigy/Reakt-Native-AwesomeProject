@@ -17,6 +17,8 @@ import * as SplashScreen from "expo-splash-screen";
 import PostsScreen from "../Screens/PostsScreen";
 import CreatePostsScreen from "../Screens/CreatePostsScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
+import { logOutUserThunk } from "../redux/operations";
+import { useDispatch } from "react-redux";
 
 const Tabs = createBottomTabNavigator();
 SplashScreen.preventAutoHideAsync();
@@ -29,6 +31,7 @@ const BottomNavigator = () => {
     Roboto_500Medium,
     Roboto_700Bold,
   });
+  const dispatch = useDispatch();
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -88,12 +91,13 @@ const BottomNavigator = () => {
           headerStyle: styles.header,
           headerRight: () => (
             <TouchableOpacity
-              onPress={() =>
+              onPress={() => {
+                dispatch(logOutUserThunk());
                 navigation.reset({
                   index: 0,
                   routes: [{ name: "Login" }],
-                })
-              }
+                });
+              }}
             >
               <MaterialIcons
                 style={styles.iconLogout}

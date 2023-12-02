@@ -1,45 +1,75 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   View,
   Text,
   ImageBackground,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import * as SplashScreen from "expo-splash-screen";
-import { AntDesign } from "@expo/vector-icons";
-import {
-  useFonts,
-  Roboto_300Light,
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-} from "@expo-google-fonts/roboto";
 
+import InputPassword from "../../components/InputPassword"; // Обратите внимание на правильное написание с заглавной буквы
+
+import * as ImagePicker from "expo-image-picker";
 import image from "../../images/Photo-BG.jpg";
-SplashScreen.preventAutoHideAsync();
+import { useDispatch, useSelector } from "react-redux";
+import { registerUserThunk } from "../../redux/operations";
+import {
+  selectData,
+  selectIsError,
+  selectIsLoading,
+} from "../../redux/authSlice";
+import InputEmail from "../../components/InputEmail";
+import { schemasYupRegisteration } from "../../utility/schemasYup";
+import InputLogin from "../../components/InputLogin";
+import {
+  rulesLogin,
+  rulesEmail,
+  rulesPassword,
+} from "../../utility/useFormRules";
+import { InputTextErrorRegistration } from "../../components/InputTextError";
+import ButtonSubmit from "../../components/ButtonSubmit";
+import { navigateToLogin } from "../../utility/navigateTo";
+import { useNavigation } from "@react-navigation/native";
+import AvatarBox from "../../components/AvatarBox";
 
 export default function RegistrationScreen() {
-  const [fontsLoaded] = useFonts({
-    Roboto_300Light,
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold,
-  });
-  const navigation = useNavigation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [login, setLogin] = useState("");
+  const [status, requestPermission] = ImagePicker.useMediaLibraryPermissions();
   const [activeInput, setActiveInput] = useState(null);
   const [isShowPassword, setIsShowPasword] = useState(true);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const [textError, setTextError] = useState(null);
+  const buttonIsDisable = useSelector(selectIsLoading);
+  const registerError = useSelector(selectIsError);
+  const registerUser = useSelector(selectData);
+  const [selectedImage, setSelectedImage] = useState(
+    registerUser ? registerUser?.photoURL : null
+  );
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      login: registerUser ? registerUser?.displayName : "",
+      email: registerUser ? registerUser?.email : "",
+      password: "",
+    },
+    resolver: yupResolver(schemasYupRegisteration),
+  });
 
   const handleInputFocus = (inputName) => {
     setActiveInput(inputName);
+    if (textError) {
+      setTextError(null);
+    }
   };
 
   const handleInputBlur = () => {
@@ -57,35 +87,43 @@ export default function RegistrationScreen() {
     };
   };
 
-  const onPressButton = () => {
-    console.log(
-      `Email:${email}
-     Password:${password}
-     Login:${login}
-     `
-    );
-    setLogin("");
-    setEmail("");
-    setPassword("");
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Home" }],
-    });
+  const removeImage = () => {
+    setSelectedImage(null);
   };
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+  const pickImage = async () => {
+    try {
+      if (!status.granted) {
+        requestPermission();
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-  if (!fontsLoaded) {
-    return null;
-  }
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Помилка вибору зоображення: ", error);
+    }
+  };
+
+  const onPressButton = async (data) => {
+    dispatch(registerUserThunk({ ...data, photoURL: selectedImage }));
+
+    if (registerError === "auth/email-already-in-use") {
+      setTextError("auth/email-already-in-use");
+      return;
+    }
+    reset();
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
-        onLayout={onLayoutRootView}
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={-150}
@@ -96,80 +134,80 @@ export default function RegistrationScreen() {
           style={styles.mainBackground}
         >
           <View style={styles.wrapper}>
-            <View style={styles.avatarBox}>
-              <TouchableOpacity style={styles.iconAdd}>
-                <AntDesign name="pluscircleo" size={25} color="#FF6C00" />
-              </TouchableOpacity>
-            </View>
+            <AvatarBox
+              selectedImage={selectedImage}
+              pickImage={pickImage}
+              removeImage={removeImage}
+            />
             <View style={styles.box}>
               <Text style={styles.title}>Реєстрація</Text>
               <View>
-                <TextInput
-                  onFocus={() => handleInputFocus("login")}
-                  onBlur={handleInputBlur}
-                  style={{
-                    ...styles.input,
-                    ...hendleInputActiveStyle("login"),
-                  }}
-                  value={login}
-                  onChangeText={setLogin}
-                  placeholderTextColor="#BDBDBD"
-                  placeholder="Логін"
-                  maxLength={20}
-                />
-                <TextInput
-                  onFocus={() => handleInputFocus("email")}
-                  onBlur={handleInputBlur}
-                  style={{
-                    ...styles.input,
-                    ...hendleInputActiveStyle("email"),
-                  }}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Адреса електронної пошти"
-                  keyboardType="email-address"
-                  placeholderTextColor="#BDBDBD"
-                  maxLength={30}
+                <InputTextErrorRegistration errors={errors?.login?.message} />
+                <Controller
+                  control={control}
+                  rules={rulesLogin}
+                  render={({ field: { onChange, value } }) => (
+                    <InputLogin
+                      handleInputBlur={handleInputBlur}
+                      onChange={onChange}
+                      value={value}
+                      handleInputFocus={handleInputFocus}
+                      hendleInputActiveStyle={hendleInputActiveStyle}
+                    />
+                  )}
+                  name="login"
                 />
 
-                <View>
-                  <TouchableOpacity
-                    onPress={handleClick}
-                    style={styles.wrapperShowPassword}
-                  >
-                    <Text style={styles.showPasswordText}>
-                      {isShowPassword ? "Показати" : "Cховати"}
-                    </Text>
-                  </TouchableOpacity>
-                  <TextInput
-                    onFocus={() => handleInputFocus("password")}
-                    onBlur={handleInputBlur}
-                    style={{
-                      ...styles.input,
-                      ...hendleInputActiveStyle("password"),
-                    }}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={isShowPassword}
-                    placeholderTextColor="#BDBDBD"
-                    autoComplete="password"
-                    placeholder="Пароль"
-                    maxLength={20}
-                    autoCapitalize="none"
-                  />
-                </View>
+                <InputTextErrorRegistration
+                  errors={errors?.email?.message}
+                  textError={textError}
+                />
+                <Controller
+                  control={control}
+                  rules={rulesEmail}
+                  render={({ field: { onChange, value } }) => (
+                    <InputEmail
+                      handleInputBlur={handleInputBlur}
+                      onChange={onChange}
+                      value={value}
+                      handleInputFocus={handleInputFocus}
+                      hendleInputActiveStyle={hendleInputActiveStyle}
+                    />
+                  )}
+                  name="email"
+                />
+                <InputTextErrorRegistration
+                  errors={errors?.password?.message}
+                />
+                <Controller
+                  control={control}
+                  rules={rulesPassword}
+                  render={({ field: { onChange, value } }) => (
+                    <InputPassword
+                      handleInputBlur={handleInputBlur}
+                      onChange={onChange}
+                      value={value}
+                      handleClick={handleClick}
+                      isShowPassword={isShowPassword}
+                      handleInputFocus={handleInputFocus}
+                      hendleInputActiveStyle={hendleInputActiveStyle}
+                    />
+                  )}
+                  name="password"
+                />
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={onPressButton}>
-                <Text style={styles.textButton}>Зареєстуватися</Text>
-              </TouchableOpacity>
+              <ButtonSubmit
+                handleSubmit={handleSubmit}
+                onPressButton={onPressButton}
+                buttonIsDisable={buttonIsDisable}
+                naming="Зареєстуватися"
+              />
               <TouchableOpacity
-                onPress={() =>
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: "Login" }],
-                  })
-                }
+                onPress={() => {
+                  setTextError(null);
+                  navigateToLogin(navigation);
+                }}
               >
                 <Text style={styles.link}>Вже є акаунт? Увійти</Text>
               </TouchableOpacity>
@@ -185,24 +223,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  iconAdd: {
-    position: "absolute",
-    bottom: 16,
-    right: -12,
-  },
   mainBackground: {
     flex: 1,
     justifyContent: "flex-end",
   },
   wrapper: { alignItems: "center" },
-  avatarBox: {
-    top: 60,
-    width: 132,
-    height: 120,
-    borderRadius: 16,
-    backgroundColor: "#E8E8E8",
-    zIndex: 1,
-  },
+
   box: {
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
@@ -221,43 +247,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#212121",
   },
-  wrapperShowPassword: {
-    position: "absolute",
-    right: 16,
-    top: "45%",
-    zIndex: 1,
-  },
-  showPasswordText: {
-    fontFamily: "Roboto_400Regular",
-    fontSize: 16,
-    color: "#1B4371",
-  },
 
-  input: {
-    fontFamily: "Roboto_400Regular",
-    fontSize: 16,
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 16,
-    textDecorationLine: "none",
-  },
-  button: {
-    marginTop: 43,
-    borderRadius: 100,
-    backgroundColor: "#FF6C00",
-    paddingTop: 16,
-    paddingRight: 32,
-    paddingBottom: 16,
-    paddingLeft: 32,
-  },
-  textButton: {
-    fontFamily: "Roboto_400Regular",
-    fontSize: 16,
-    textAlign: "center",
-    color: "#fff",
-  },
   link: {
     fontFamily: "Roboto_400Regular",
     fontSize: 16,

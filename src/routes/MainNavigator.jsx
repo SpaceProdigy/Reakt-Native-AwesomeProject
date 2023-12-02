@@ -10,11 +10,27 @@ import LoginScreen from "../Screens/auth/LoginScreen";
 import Home from "../Screens/Home";
 import CommentsScreen from "../Screens/CommentsScreen";
 import MapScreen from "../Screens/MapScreen";
+import { useDispatch, useSelector } from "react-redux";
+import { actualAuth } from "../redux/operations";
+import { useEffect } from "react";
+import { selectIsAuthentificated } from "../redux/authSlice";
 
 const MainStack = createStackNavigator();
 
 export default function MainNavigator() {
   const navigation = useNavigation();
+  const authenticated = useSelector(selectIsAuthentificated);
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(actualAuth());
+    if (authenticated) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      });
+    }
+  }, [authenticated]);
   return (
     <MainStack.Navigator
       initialRouteName="Login"

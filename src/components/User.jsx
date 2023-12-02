@@ -6,18 +6,16 @@ import {
   Roboto_500Medium,
   Roboto_700Bold,
 } from "@expo-google-fonts/roboto";
-
+import anonymous from "../images/anonymous.jpg";
 import { View, Text, StyleSheet, Image } from "react-native";
-import users from "../data/usersData/users.json";
 
-export default function User() {
+export default function User({ photo, email = "", name = "" }) {
   const [fontsLoaded] = useFonts({
     Roboto_300Light,
     Roboto_400Regular,
     Roboto_500Medium,
     Roboto_700Bold,
   });
-  const { firstName, lastName, email, avatar } = users[0];
 
   if (!fontsLoaded) {
     return null;
@@ -25,9 +23,9 @@ export default function User() {
 
   return (
     <View style={styles.wrapper}>
-      <Image source={{ uri: avatar }} style={styles.img} />
+      <Image source={photo ? { uri: photo } : anonymous} style={styles.img} />
       <View>
-        <Text style={styles.name}>{`${firstName} ${lastName}`}</Text>
+        <Text style={styles.name}>{`${name}`}</Text>
         <Text style={styles.email}>{`${email}`}</Text>
       </View>
     </View>

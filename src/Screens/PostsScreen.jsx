@@ -1,16 +1,24 @@
 import React from "react";
 
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, StyleSheet } from "react-native";
 
 import User from "../components/User";
 import ListPosts from "../components/ListPosts";
+import { useSelector } from "react-redux";
+import { selectData } from "../redux/authSlice";
 
 export default function PostsScreen() {
+  const user = useSelector(selectData);
+
   return (
     <>
       <View style={styles.screen}>
         <View style={styles.user}>
-          <User />
+          <User
+            photo={user?.photoURL}
+            email={user?.email}
+            name={user?.displayName}
+          />
         </View>
         <View style={styles.list}>
           <ListPosts />
