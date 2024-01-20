@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Keyboard, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Keyboard, Text, TouchableOpacity } from "react-native";
 import {
   View,
   StyleSheet,
@@ -9,19 +9,20 @@ import {
   TextInput,
 } from "react-native";
 
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-} from "@expo-google-fonts/inter";
-
 import { AntDesign } from "@expo/vector-icons";
 
-import users from "../data/usersData/users.json";
 import Comments from "../components/Comments";
 import { TouchableWithoutFeedback } from "react-native";
 import { KeyboardAvoidingView } from "react-native";
 import { Platform } from "react-native";
+import {
+  addCommentsToFirestor,
+  fetchCommentsToFirestor,
+} from "../redux/operations";
+import { useDispatch, useSelector } from "react-redux";
+import { selectData } from "../redux/authSlice";
+import { selectComments, selectIsLoading } from "../redux/picturesSlice";
+import Loader from "../utility/Loader";
 
 const phrases = [
   "Гарне фото...",
@@ -37,17 +38,22 @@ const phrases = [
 ];
 
 export default function CommentsScreen({ route }) {
-  let [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-  });
-
   const [comment, setComment] = useState(null);
   const [activeInput, setActiveInput] = useState(null);
   const [emptyComment, setEmptyComment] = useState(null);
   const [numExample, setNumExample] = useState(0);
+  const statusLoading = useSelector(selectIsLoading);
+  const dispatch = useDispatch();
+  const user = useSelector(selectData);
+  const comments = useSelector(selectComments);
 
-  const { uri, comments } = route.params;
+  const { uri, photoID } = route.params;
+
+  const fatchData = { id: user.uid, photoId: photoID };
+
+  useEffect(() => {
+    dispatch(fetchCommentsToFirestor(fatchData));
+  }, []);
 
   const handleInputFocus = (inputName) => {
     setActiveInput(inputName);
@@ -63,7 +69,7 @@ export default function CommentsScreen({ route }) {
     };
   };
 
-  const onPressButton = () => {
+  const onPressButton = async () => {
     if (!comment || comment.trim() === "") {
       setEmptyComment(true);
       setComment(null);
@@ -74,20 +80,28 @@ export default function CommentsScreen({ route }) {
       setNumExample((prevNum) => prevNum + 1);
       return;
     }
-    console.log(
-      `Comment:${comment.trim()}
-    
-     `
+    const currentDate = new Date().toISOString();
+    await dispatch(
+      addCommentsToFirestor({
+        photoId: photoID,
+        uid: user.uid,
+        addcomment: {
+          text: comment.trim(),
+          user: {
+            login: user.displayName,
+            id: user.uid,
+            avatar: user.photoURL,
+          },
+          date: currentDate,
+        },
+      })
     );
+
     setEmptyComment(null);
     setComment(null);
     setActiveInput(null);
     Keyboard.dismiss();
   };
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   return (
     <KeyboardAvoidingView
@@ -102,26 +116,35 @@ export default function CommentsScreen({ route }) {
           </TouchableWithoutFeedback>
 
           <SafeAreaView style={styles.listWrapper}>
-            <FlatList
-              data={comments}
-              renderItem={({ item, index }) => {
-                return (
-                  <Comments
-                    index={index}
-                    userId={users[0].id}
-                    commetnId={item.user.id}
-                    avatar={item.user.avatar}
-                    text={item.text}
-                    date={item.date}
-                    time={item.time}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item.id}
-              extraData={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              keyboardDismissMode="interactive"
-            />
+            {statusLoading ? (
+              <Loader />
+            ) : comments.length > 0 ? (
+              <FlatList
+                data={comments}
+                renderItem={({ item, index }) => {
+                  return (
+                    <Comments
+                      index={index}
+                      userId={user.uid}
+                      commetnId={item.user.id}
+                      avatar={item.user.avatar}
+                      text={item.text}
+                      date={item.date}
+                    />
+                  );
+                }}
+                keyExtractor={(item) =>
+                  item.id ? item.id : new Date().toDateString()
+                }
+                extraData={(item) =>
+                  item.id ? item.id : new Date().toDateString()
+                }
+                showsVerticalScrollIndicator={false}
+                keyboardDismissMode="interactive"
+              />
+            ) : (
+              <Text style={styles.text}>Коментарі відсутні</Text>
+            )}
           </SafeAreaView>
           <View style={styles.inputWrapper}>
             <TextInput
@@ -144,6 +167,7 @@ export default function CommentsScreen({ route }) {
             <TouchableOpacity
               onPress={onPressButton}
               style={styles.iconButtonWrapper}
+              disabled={statusLoading}
             >
               <View>
                 <AntDesign name="arrowup" size={18} color="#fff" />
@@ -198,5 +222,14 @@ const styles = StyleSheet.create({
     height: 34,
     backgroundColor: "#FF6C00",
     borderRadius: 50,
+  },
+  text: {
+    textAlign: "center",
+    fontFamily: "Roboto_400Regular",
+    fontSize: 16,
+    lineHeight: 18.75,
+    color: "#BDBDBD",
+    marginTop: 8,
+    marginBottom: 16,
   },
 });

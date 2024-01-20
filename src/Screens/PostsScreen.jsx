@@ -1,27 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { View, StyleSheet } from "react-native";
 
 import User from "../components/User";
 import ListPosts from "../components/ListPosts";
-import { useSelector } from "react-redux";
-import { selectData } from "../redux/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { selectData, selectUserId } from "../redux/authSlice";
+import { selectIsLoading, selectPictures } from "../redux/picturesSlice";
+
+import { fetchPhotosToFirestor } from "../redux/operations";
+import Loader from "../utility/Loader";
+import { Text } from "react-native";
 
 export default function PostsScreen() {
+  const userId = useSelector(selectUserId);
+  const dispatch = useDispatch();
+
   const user = useSelector(selectData);
+  const statusLoading = useSelector(selectIsLoading);
+  const photos = useSelector(selectPictures);
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchPhotosToFirestor(userId));
+    }
+  }, [userId]);
 
   return (
     <>
       <View style={styles.screen}>
         <View style={styles.user}>
-          <User
-            photo={user?.photoURL}
-            email={user?.email}
-            name={user?.displayName}
-          />
+          {user && (
+            <User
+              photo={user.photoURL}
+              email={user.email}
+              name={user.displayName}
+            />
+          )}
         </View>
         <View style={styles.list}>
-          <ListPosts />
+          {statusLoading ? (
+            <Loader />
+          ) : photos.length > 0 ? (
+            <ListPosts />
+          ) : (
+            <Text style={styles.text}>У вас поки що немає фото</Text>
+          )}
         </View>
       </View>
     </>
@@ -35,4 +59,13 @@ const styles = StyleSheet.create({
   },
   user: { marginLeft: 16, marginTop: 32, marginBottom: 32 },
   list: { flex: 1 },
+  text: {
+    textAlign: "center",
+    fontFamily: "Roboto_400Regular",
+    fontSize: 16,
+    lineHeight: 18.75,
+    color: "#BDBDBD",
+    marginTop: 8,
+    marginBottom: 16,
+  },
 });

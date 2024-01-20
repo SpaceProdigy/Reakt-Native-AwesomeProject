@@ -30,6 +30,12 @@ export default function MainNavigator() {
         routes: [{ name: "Home" }],
       });
     }
+    if (!authenticated) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    }
   }, [authenticated]);
   return (
     <MainStack.Navigator

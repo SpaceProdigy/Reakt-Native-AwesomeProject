@@ -1,32 +1,22 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
+import moment from "moment";
+import "moment/locale/uk";
 
-import {
-  useFonts,
-  Roboto_300Light,
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-} from "@expo-google-fonts/roboto";
+import anonymous from "../images/anonymous.jpg";
 
 export default function Comments({
   avatar,
   text,
   date,
-  time,
   userId,
   commetnId,
   index,
 }) {
-  const [fontsLoaded] = useFonts({
-    Roboto_300Light,
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold,
-  });
-  if (!fontsLoaded) {
-    return null;
-  }
+  moment.locale("uk");
+  const formatDate = new Date(date);
+  const time = moment(formatDate).format("HH:mm");
+  const month = moment(formatDate).format("DD MMMM, YYYY");
 
   return (
     <View
@@ -37,7 +27,7 @@ export default function Comments({
       }}
     >
       <Image
-        source={{ uri: avatar }}
+        source={avatar ? { uri: avatar } : anonymous}
         style={{
           ...styles.avatar,
           marginRight: commetnId === userId ? 0 : 16,
@@ -51,7 +41,7 @@ export default function Comments({
             ...styles.time,
             textAlign: commetnId === userId ? "left" : "right",
           }}
-        >{`${date} | ${time}`}</Text>
+        >{`${month} | ${time}`}</Text>
       </View>
     </View>
   );

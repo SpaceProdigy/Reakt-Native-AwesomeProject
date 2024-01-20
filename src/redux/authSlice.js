@@ -7,7 +7,6 @@ import {
   actualAuth,
   logOutUserThunk,
   loginUserThunk,
-  refreshUserThunk,
   registerUserThunk,
 } from "./operations";
 
@@ -97,4 +96,5 @@ export const selectIsLoading = (state) => state.auth.isLoading;
 export const selectIsError = (state) => state.auth.error;
 export const selectToken = (state) => state.auth.token;
 export const selectData = (state) => state.auth.userData;
+export const selectUserId = (state) => state.auth.userData?.uid;
 export const selectIsAuthentificated = (state) => state.auth.authentificated;

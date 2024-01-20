@@ -18,7 +18,8 @@ import PostsScreen from "../Screens/PostsScreen";
 import CreatePostsScreen from "../Screens/CreatePostsScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
 import { logOutUserThunk } from "../redux/operations";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectIsLoading } from "../redux/authSlice";
 
 const Tabs = createBottomTabNavigator();
 SplashScreen.preventAutoHideAsync();
@@ -32,6 +33,7 @@ const BottomNavigator = () => {
     Roboto_700Bold,
   });
   const dispatch = useDispatch();
+  const statusLoading = useSelector(selectIsLoading);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -55,14 +57,16 @@ const BottomNavigator = () => {
 
           if (route.name === "PostsScreen") {
             iconName = "ios-grid-outline";
+            iconColor = focused && "#FF6C00";
           }
           if (route.name === "CreatePostsScreen") {
             iconName = "add";
-            iconStyle = styles.isActive;
+            iconStyle = styles.addPhotos;
             iconColor = "white";
           }
           if (route.name === "ProfileScreen") {
             iconName = "person-outline";
+            iconColor = focused && "#FF6C00";
           }
 
           return (
@@ -91,8 +95,9 @@ const BottomNavigator = () => {
           headerStyle: styles.header,
           headerRight: () => (
             <TouchableOpacity
-              onPress={() => {
+              onPress={async () => {
                 dispatch(logOutUserThunk());
+
                 navigation.reset({
                   index: 0,
                   routes: [{ name: "Login" }],
@@ -159,6 +164,9 @@ const BottomNavigator = () => {
 
 const styles = StyleSheet.create({
   isActive: {
+    color: "#FF6C00",
+  },
+  addPhotos: {
     backgroundColor: "#FF6C00",
     paddingTop: 13.5,
     paddingBottom: 13.5,

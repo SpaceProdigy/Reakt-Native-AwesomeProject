@@ -194,4 +194,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 79,
   },
+  linkAcent: { textDecorationLine: "underline" },
 });

@@ -8,7 +8,13 @@ import {
   updateProfile,
 } from "firebase/auth";
 
-import { auth, db, signOutUser } from "../../config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+const metadata = {
+  contentType: "image/jpeg",
+};
+
+import { auth, db, signOutUser, storage } from "../../config";
 
 import {
   collection,
@@ -16,21 +22,119 @@ import {
   getDocs,
   doc,
   updateDoc,
+  serverTimestamp,
+  query,
+  orderBy,
 } from "firebase/firestore";
 
-const writeDataToFirestore = async () => {
-  try {
-    const docRef = await addDoc(collection(db, "users"), {
-      first: "Ada",
-      last: "Lovelace",
-      born: 1815,
-    });
-    console.log("Document written with ID: ", docRef.id);
-  } catch (e) {
-    console.error("Error adding document: ", e);
-    throw e;
+export const fetchCommentsToFirestor = createAsyncThunk(
+  "fireStore/fetchCommentsToFirestor",
+  async (data, { rejectWithValue }) => {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, "users", data.id, "photos", data.photoId, "comments"),
+          orderBy("date", "desc")
+        )
+      );
+      const mappedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return mappedData;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.code);
+    }
   }
-};
+);
+
+export const addCommentsToFirestor = createAsyncThunk(
+  "fireStore/addCommentsToFirestor",
+  async (data, { rejectWithValue }) => {
+    try {
+      await addDoc(
+        collection(db, "users", data.uid, "photos", data.photoId, "comments"),
+        data.addcomment
+      );
+
+      return data.addcomment;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.code);
+    }
+  }
+);
+
+// export const updatePhotosToFirestor = createAsyncThunk(
+//   "fireStore/updatePhotosToFirestor",
+//   async (data, { rejectWithValue }) => {
+//     try {
+//       const docRef = doc(collection(db, "users", data.uid, "photos"), data.id);
+
+//       await updateDoc(docRef, data.updateData);
+//       console.log("document updated");
+
+//       // return mappedData;
+//     } catch (error) {
+//       console.error(error);
+//       return rejectWithValue(error.code);
+//     }
+//   }
+// );
+
+export const fetchPhotosToFirestor = createAsyncThunk(
+  "fireStore/fetchPhotosToFirestor",
+  async (id, { rejectWithValue }) => {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, "users", id, "photos"),
+          orderBy("timestamp", "desc")
+        )
+      );
+
+      const mappedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      return mappedData;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.code);
+    }
+  }
+);
+
+export const addPhotosToFirestor = createAsyncThunk(
+  "fireStore/addPhotosToFirestor",
+  async (data, { rejectWithValue }) => {
+    try {
+      const imagesRef = ref(storage, `${data?.uid}/${data?.photoName}`);
+      const file = new File(
+        [await fetch(data?.image).then((res) => res.blob())],
+        data?.photoName
+      );
+
+      await uploadBytes(imagesRef, file, metadata);
+
+      const url = await getDownloadURL(
+        ref(storage, `${data.uid}/${data.photoName}`)
+      );
+      const currentDate = new Date().toISOString();
+
+      const newData = { ...data, image: url, timestamp: currentDate };
+
+      await addDoc(collection(db, "users", data.uid, "photos"), newData);
+
+      return newData;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error);
+    }
+  }
+);
 
 export const authStateChanged = async () => {
   return new Promise((resolve) => {
@@ -45,6 +149,7 @@ export const actualAuth = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const user = await authStateChanged();
+
       if (user) {
         const {
           accessToken,
@@ -186,48 +291,12 @@ export const logOutUserThunk = createAsyncThunk(
   }
 );
 
-export const fetchContacts = createAsyncThunk(
-  "contacts/fetchAll",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axios.get("/contacts");
-      return data;
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
-  }
-);
-
-export const addContact = createAsyncThunk(
-  "contacts/addContact",
-  async (contact, { rejectWithValue }) => {
-    try {
-      const response = await axios.post("/contacts", contact);
-      return response.data;
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
-  }
-);
-
 export const deleteContact = createAsyncThunk(
   "contacts/deleteContact",
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`/contacts/${id}`);
       return response.data;
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
-  }
-);
-
-export const editContact = createAsyncThunk(
-  "contacts/editContact",
-  async ({ currentId, data }, { rejectWithValue }) => {
-    try {
-      const respons = await axios.patch(`/contacts/${currentId}`, data);
-      return respons.data;
     } catch (e) {
       return rejectWithValue(e.message);
     }

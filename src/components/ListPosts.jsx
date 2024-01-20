@@ -1,27 +1,34 @@
 import React from "react";
 import { SafeAreaView, FlatList, StyleSheet } from "react-native";
 
-import DATA from "../data/usersData/photos.json";
 import Item from "./Item";
+import { selectPictures } from "../redux/picturesSlice";
+import { useSelector } from "react-redux";
 
 const ListPosts = () => {
+  const photos = useSelector(selectPictures);
+
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={DATA.images}
-        renderItem={({ item, index }) => (
-          <Item
-            index={index}
-            uri={item.url}
-            title={item.title}
-            location={item.location}
-            comments={item.comments}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        extraData={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-      />
+      {photos && (
+        <FlatList
+          data={photos}
+          renderItem={({ item, index }) => (
+            <Item
+              photoID={item.id}
+              key={item.id}
+              index={index}
+              uri={item.image}
+              title={item.photoName}
+              location={item.location}
+              comments={item.comments}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          extraData={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };

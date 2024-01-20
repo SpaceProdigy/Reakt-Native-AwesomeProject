@@ -9,9 +9,10 @@ import {
   REGISTER,
 } from "redux-persist";
 import { authReducer } from "./authSlice";
+import { picturesReducer } from "./picturesSlice";
 
 const store = configureStore({
-  reducer: { auth: authReducer },
+  reducer: { auth: authReducer, pictures: picturesReducer },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

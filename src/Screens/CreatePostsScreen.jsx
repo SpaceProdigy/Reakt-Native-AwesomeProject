@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   View,
@@ -13,10 +13,8 @@ import {
 } from "react-native";
 import {
   useFonts,
-  Roboto_300Light,
   Roboto_400Regular,
   Roboto_500Medium,
-  Roboto_700Bold,
 } from "@expo-google-fonts/roboto";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
@@ -27,13 +25,16 @@ import SvgTrashIcon from "../images/svg/SvgTreshIcon";
 import SvgMapLocation from "../images/svg/SvgMapLocation";
 import { useNavigation } from "@react-navigation/native";
 import addressGeocoded from "../utility/addressGeocoded";
+import { useDispatch, useSelector } from "react-redux";
+import { selectData, selectUserId } from "../redux/authSlice";
+import { addPhotosToFirestor } from "../redux/operations";
+import Loader from "../utility/Loader";
+import { selectIsLoading } from "../redux/picturesSlice";
 
 export default function PostsScreen() {
   const [fontsLoaded] = useFonts({
-    Roboto_300Light,
     Roboto_400Regular,
     Roboto_500Medium,
-    Roboto_700Bold,
   });
   const navigation = useNavigation();
   const [photoName, setPhotoName] = useState("");
@@ -46,7 +47,9 @@ export default function PostsScreen() {
   const [imageLoaded, setImageLoaded] = useState(true);
   const [status, requestPermission] = Location.useForegroundPermissions();
   const [mapInput, setMapInput] = useState("");
-
+  const dispatch = useDispatch();
+  const uid = useSelector(selectUserId);
+  const statusLoading = useSelector(selectIsLoading);
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -75,15 +78,22 @@ export default function PostsScreen() {
   if (!fontsLoaded) {
     return null;
   }
-  const onPressButton = () => {
-    console.log(
-      `PhotoName:${photoName}
-     Geolocation:${mapInput}
-     `
-    );
+  const onPressButton = async () => {
+    if (!statusLoading) {
+      await dispatch(
+        addPhotosToFirestor({
+          photoName,
+          location: mapInput,
+          uid,
+          image: fotoUri,
+        })
+      );
+    }
+
     setMapInput("");
     setPhotoName("");
     setFotoUri(null);
+
     navigation.reset({
       index: 0,
       routes: [{ name: "PostsScreen" }],
@@ -121,7 +131,6 @@ export default function PostsScreen() {
         setFotoUri(photo.uri);
         setImageLoaded(true);
         let { coords } = await Location.getCurrentPositionAsync();
-        console.log(coords);
         const { latitude, longitude } = coords;
         const address = await addressGeocoded(latitude, longitude);
         const { region, country } = address;
@@ -166,29 +175,35 @@ export default function PostsScreen() {
                   <Image source={{ uri: fotoUri }} style={styles.image} />
                 </View>
               )}
+
               {imageLoaded && (
                 <TouchableOpacity
                   style={styles.buttonCamera}
                   onPress={takePicture}
+                  disabled={statusLoading}
                 >
-                  <View
-                    style={{
-                      ...styles.box,
-                      backgroundColor: fotoUri
-                        ? "rgba(255, 255, 255, 0.3)"
-                        : "rgba(255, 255, 255, 1)",
-                    }}
-                  >
-                    <MaterialIcons
-                      name="photo-camera"
-                      size={24}
-                      color={
-                        !fotoUri
-                          ? "rgba(189, 189, 189, 1)"
-                          : "rgba(255, 255, 255, 1)"
-                      }
-                    />
-                  </View>
+                  {statusLoading ? (
+                    <Loader />
+                  ) : (
+                    <View
+                      style={{
+                        ...styles.box,
+                        backgroundColor: fotoUri
+                          ? "rgba(255, 255, 255, 0.3)"
+                          : "rgba(255, 255, 255, 1)",
+                      }}
+                    >
+                      <MaterialIcons
+                        name="photo-camera"
+                        size={24}
+                        color={
+                          !fotoUri
+                            ? "rgba(189, 189, 189, 1)"
+                            : "rgba(255, 255, 255, 1)"
+                        }
+                      />
+                    </View>
+                  )}
                 </TouchableOpacity>
               )}
             </Camera>
@@ -230,9 +245,11 @@ export default function PostsScreen() {
             style={{
               ...styles.button,
               backgroundColor:
-                mapInput && photoName && fotoUri ? "#FF6C00" : "#F6F6F6",
+                mapInput && photoName && fotoUri && !statusLoading
+                  ? "#FF6C00"
+                  : "#F6F6F6",
             }}
-            disabled={!mapInput || !photoName || !fotoUri}
+            disabled={!mapInput || !photoName || !fotoUri || statusLoading}
           >
             <Text
               style={{
@@ -244,14 +261,16 @@ export default function PostsScreen() {
             </Text>
           </TouchableOpacity>
           <View style={styles.trashWrapper}>
-            <TouchableOpacity
-              disabled={!mapInput && !photoName && !fotoUri}
-              onPress={onPressTrash}
-            >
-              <View style={styles.trashBox}>
-                <SvgTrashIcon width={24} height={24} />
-              </View>
-            </TouchableOpacity>
+            {!statusLoading && (
+              <TouchableOpacity
+                disabled={!mapInput && !photoName && !fotoUri}
+                onPress={onPressTrash}
+              >
+                <View style={styles.trashBox}>
+                  <SvgTrashIcon width={24} height={24} />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
