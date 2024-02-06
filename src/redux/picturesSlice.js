@@ -3,6 +3,7 @@ import {
   fetchPhotosToFirestor,
   addCommentsToFirestor,
   fetchCommentsToFirestor,
+  deleteCommentsToFirestor,
 } from "./operations";
 const { createSlice } = require("@reduxjs/toolkit");
 
@@ -48,6 +49,13 @@ const picturesSlice = createSlice({
       .addCase(addCommentsToFirestor.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = false;
+        const index = state.items.findIndex(
+          (item) => item.id === action.payload.photoId
+        );
+        if (index !== -1) {
+          state.items[index].comments = action.payload.comments;
+        }
+
         state.comments.unshift(action.payload);
       })
       .addCase(fetchCommentsToFirestor.pending, handlePending)
@@ -56,8 +64,28 @@ const picturesSlice = createSlice({
         state.isLoading = false;
         state.error = false;
         state.comments = action.payload;
+      })
+      .addCase(deleteCommentsToFirestor.pending, handlePending)
+      .addCase(deleteCommentsToFirestor.rejected, handleRejected)
+      .addCase(deleteCommentsToFirestor.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = false;
+        console.log("PAYLOAD", action.payload);
+        const index = state.comments.findIndex(
+          (item) => item.idComment === action.payload.idComment
+        );
+        console.log(index);
+        if (index !== -1) {
+          state.comments.splice(index, 1);
+        }
+        const indexComment = state.items.findIndex(
+          (item) => item.id === action.payload.photoId
+        );
+        console.log(indexComment);
+        if (indexComment !== -1) {
+          state.items[index].comments = action.payload.comments;
+        }
       }),
-
   //   .addCase(deleteContact.fulfilled, (state, action) => {
   //     handleFulFilledStandart(state);
   //     const index = state.items.findIndex(

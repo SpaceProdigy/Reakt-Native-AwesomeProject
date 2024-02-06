@@ -122,6 +122,7 @@ export default function CommentsScreen({ route }) {
               <FlatList
                 data={comments}
                 renderItem={({ item, index }) => {
+                  console.log(item);
                   return (
                     <Comments
                       index={index}
@@ -130,15 +131,15 @@ export default function CommentsScreen({ route }) {
                       avatar={item.user.avatar}
                       text={item.text}
                       date={item.date}
+                      photoID={photoID}
+                      idComment={item.idComment}
                     />
                   );
                 }}
                 keyExtractor={(item) =>
-                  item.id ? item.id : new Date().toDateString()
+                  item.id ? item.id : new Date().getTime()
                 }
-                extraData={(item) =>
-                  item.id ? item.id : new Date().toDateString()
-                }
+                extraData={(item) => (item.id ? item.id : new Date().getTime())}
                 showsVerticalScrollIndicator={false}
                 keyboardDismissMode="interactive"
               />
@@ -166,7 +167,10 @@ export default function CommentsScreen({ route }) {
             />
             <TouchableOpacity
               onPress={onPressButton}
-              style={styles.iconButtonWrapper}
+              style={{
+                ...styles.iconButtonWrapper,
+                opacity: statusLoading ? 0.5 : 1,
+              }}
               disabled={statusLoading}
             >
               <View>

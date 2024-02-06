@@ -1,9 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import moment from "moment";
 import "moment/locale/uk";
+import { Ionicons } from "@expo/vector-icons";
 
 import anonymous from "../images/anonymous.jpg";
+import { deleteCommentsToFirestor } from "../redux/operations";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUserId } from "../redux/authSlice";
 
 export default function Comments({
   avatar,
@@ -12,12 +16,18 @@ export default function Comments({
   userId,
   commetnId,
   index,
+  photoID,
+  idComment,
 }) {
+  const dispatch = useDispatch();
+  const uid = useSelector(selectUserId);
   moment.locale("uk");
   const formatDate = new Date(date);
   const time = moment(formatDate).format("HH:mm");
   const month = moment(formatDate).format("DD MMMM, YYYY");
-
+  const onPressTrash = async () => {
+    await dispatch(deleteCommentsToFirestor({ uid, photoID, idComment }));
+  };
   return (
     <View
       style={{
@@ -34,6 +44,7 @@ export default function Comments({
           marginLeft: commetnId === userId ? 16 : 0,
         }}
       />
+
       <View style={styles.wrapperText}>
         <Text style={styles.text}>{text}</Text>
         <Text
@@ -42,6 +53,13 @@ export default function Comments({
             textAlign: commetnId === userId ? "left" : "right",
           }}
         >{`${month} | ${time}`}</Text>
+        <TouchableOpacity
+          style={styles.bin}
+          // disabled={!mapInput && !photoName && !fotoUri}
+          onPress={onPressTrash}
+        >
+          <Ionicons name="trash-bin-outline" size={24} color="#777555" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -77,5 +95,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 11.72,
     color: "#BDBDBD",
+  },
+  bin: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
   },
 });

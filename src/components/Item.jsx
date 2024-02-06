@@ -24,7 +24,7 @@ const Item = ({ photoID, uri, title, location, comments, index }) => {
           <TouchableOpacity onPress={onPressComments}>
             <SvgMassage width={24} height={24} />
           </TouchableOpacity>
-          <Text style={styles.countComments}>{comments?.length || 0}</Text>
+          <Text style={styles.countComments}>{comments ? comments : 0}</Text>
         </View>
         <TouchableOpacity onPress={onPressLocation}>
           <View style={styles.box}>
