@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 
 const ListPosts = () => {
   const photos = useSelector(selectPictures);
+  console.log(photos);
 
   return (
     <SafeAreaView style={styles.container}>
