@@ -4,6 +4,7 @@ import {
   addCommentsToFirestor,
   fetchCommentsToFirestor,
   deleteCommentsToFirestor,
+  addLikeToFirestor,
 } from "./operations";
 const { createSlice } = require("@reduxjs/toolkit");
 
@@ -55,7 +56,6 @@ const picturesSlice = createSlice({
         if (index !== -1) {
           state.items[index].comments = action.payload.comments;
         }
-
         state.comments.unshift(action.payload);
       })
       .addCase(fetchCommentsToFirestor.pending, handlePending)
@@ -63,47 +63,40 @@ const picturesSlice = createSlice({
       .addCase(fetchCommentsToFirestor.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = false;
-        state.comments = action.payload;
+        state.comments = action.payload.mappedData;
       })
       .addCase(deleteCommentsToFirestor.pending, handlePending)
       .addCase(deleteCommentsToFirestor.rejected, handleRejected)
       .addCase(deleteCommentsToFirestor.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = false;
-        console.log("PAYLOAD", action.payload);
         const index = state.comments.findIndex(
-          (item) => item.idComment === action.payload.idComment
+          (item) => item.id === action.payload.id
         );
-        console.log(index);
         if (index !== -1) {
           state.comments.splice(index, 1);
         }
         const indexComment = state.items.findIndex(
           (item) => item.id === action.payload.photoId
         );
-        console.log(indexComment);
         if (indexComment !== -1) {
-          state.items[index].comments = action.payload.comments;
+          state.items[indexComment].comments = action.payload.comments;
+        }
+      })
+      .addCase(addLikeToFirestor.pending, handlePending)
+      .addCase(addLikeToFirestor.rejected, handleRejected)
+      .addCase(addLikeToFirestor.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = false;
+
+        const indexComment = state.items.findIndex(
+          (item) => item.id === action.payload.photoId
+        );
+
+        if (indexComment !== -1) {
+          state.items[indexComment].likes = action.payload.currentLikes;
         }
       }),
-  //   .addCase(deleteContact.fulfilled, (state, action) => {
-  //     handleFulFilledStandart(state);
-  //     const index = state.items.findIndex(
-  //       (task) => task.id === action.payload.id
-  //     );
-  //     state.items.splice(index, 1);
-  //   })
-  //   .addCase(editContact.fulfilled, (state, action) => {
-  //     handleFulFilledStandart(state);
-  //     const updatedContact = action.payload;
-  //     const index = state.items.findIndex(
-  //       (contact) => contact.id === updatedContact.id
-  //     );
-
-  //     if (index !== -1) {
-  //       state.items.splice(index, 1, updatedContact);
-  //     }
-  //   }),
 });
 
 export const picturesReducer = picturesSlice.reducer;

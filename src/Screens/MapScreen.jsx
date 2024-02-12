@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { GOOGLE_API_KEY } from "@env";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 
 import MapView, { Marker } from "react-native-maps";
 import Loader from "../utility/Loader";
@@ -22,7 +22,7 @@ export default function MapScreen({ route }) {
         const { lat, lng } = results[0].geometry.location;
         setCoordinates({ latitude: lat, longitude: lng });
       } else {
-        setCoordinates(null);
+        setCoordinates("notData");
       }
     } catch (error) {
       console.error("Error fetching coordinates:", error);
@@ -37,7 +37,7 @@ export default function MapScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      {coordinates ? (
+      {coordinates && coordinates !== "notData" ? (
         <MapView
           ref={mapRef}
           style={styles.mapStyle}
@@ -57,6 +57,8 @@ export default function MapScreen({ route }) {
             description="Hello"
           />
         </MapView>
+      ) : coordinates === "notData" ? (
+        <Text style={styles.text}>Не вдається знайти локацию</Text>
       ) : (
         <Loader />
       )}
@@ -86,5 +88,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "black",
+  },
+  text: {
+    textAlign: "center",
+    fontFamily: "Roboto_400Regular",
+    fontSize: 16,
+    lineHeight: 18.75,
+    color: "#BDBDBD",
+    marginTop: 8,
+    marginBottom: 16,
   },
 });

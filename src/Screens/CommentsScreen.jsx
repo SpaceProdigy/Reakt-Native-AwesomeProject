@@ -41,18 +41,35 @@ export default function CommentsScreen({ route }) {
   const [comment, setComment] = useState(null);
   const [activeInput, setActiveInput] = useState(null);
   const [emptyComment, setEmptyComment] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [numExample, setNumExample] = useState(0);
   const statusLoading = useSelector(selectIsLoading);
   const dispatch = useDispatch();
   const user = useSelector(selectData);
   const comments = useSelector(selectComments);
+  const [pressButton, setPressButton] = useState(null);
 
   const { uri, photoID } = route.params;
 
   const fatchData = { id: user.uid, photoId: photoID };
 
   useEffect(() => {
-    dispatch(fetchCommentsToFirestor(fatchData));
+    if (!statusLoading) {
+      setPressButton(null);
+    }
+  }, [statusLoading]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchCommentsToFirestor(fatchData));
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleInputFocus = (inputName) => {
@@ -80,6 +97,7 @@ export default function CommentsScreen({ route }) {
       setNumExample((prevNum) => prevNum + 1);
       return;
     }
+    setPressButton("sendBtn");
     const currentDate = new Date().toISOString();
     await dispatch(
       addCommentsToFirestor({
@@ -116,13 +134,12 @@ export default function CommentsScreen({ route }) {
           </TouchableWithoutFeedback>
 
           <SafeAreaView style={styles.listWrapper}>
-            {statusLoading ? (
+            {isLoading ? (
               <Loader />
             ) : comments.length > 0 ? (
               <FlatList
                 data={comments}
                 renderItem={({ item, index }) => {
-                  console.log(item);
                   return (
                     <Comments
                       index={index}
@@ -132,14 +149,12 @@ export default function CommentsScreen({ route }) {
                       text={item.text}
                       date={item.date}
                       photoID={photoID}
-                      idComment={item.idComment}
+                      id={item.id}
                     />
                   );
                 }}
-                keyExtractor={(item) =>
-                  item.id ? item.id : new Date().getTime()
-                }
-                extraData={(item) => (item.id ? item.id : new Date().getTime())}
+                keyExtractor={(item) => item.id}
+                extraData={(item) => item.id}
                 showsVerticalScrollIndicator={false}
                 keyboardDismissMode="interactive"
               />
@@ -165,18 +180,24 @@ export default function CommentsScreen({ route }) {
               placeholderTextColor={emptyComment ? "#ff5454" : "#BDBDBD"}
               maxLength={100}
             />
-            <TouchableOpacity
-              onPress={onPressButton}
-              style={{
-                ...styles.iconButtonWrapper,
-                opacity: statusLoading ? 0.5 : 1,
-              }}
-              disabled={statusLoading}
-            >
-              <View>
-                <AntDesign name="arrowup" size={18} color="#fff" />
+            {pressButton === "sendBtn" && !isLoading ? (
+              <View style={styles.loader}>
+                <Loader size={34} />
               </View>
-            </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={onPressButton}
+                style={{
+                  ...styles.iconButtonWrapper,
+                  opacity: statusLoading ? 0.5 : 1,
+                }}
+                disabled={statusLoading}
+              >
+                <View>
+                  <AntDesign name="arrowup" size={18} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </>
       </TouchableWithoutFeedback>
@@ -235,5 +256,9 @@ const styles = StyleSheet.create({
     color: "#BDBDBD",
     marginTop: 8,
     marginBottom: 16,
+  },
+  loader: {
+    position: "absolute",
+    right: 8,
   },
 });

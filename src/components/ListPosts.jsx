@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 
 const ListPosts = () => {
   const photos = useSelector(selectPictures);
-  console.log(photos);
+
   return (
     <SafeAreaView style={styles.container}>
       {photos && (
@@ -19,6 +19,7 @@ const ListPosts = () => {
               key={item.id}
               index={index}
               uri={item.image}
+              likes={item.likes}
               title={item.photoName}
               location={item.location}
               comments={item.comments}
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingBottom: 32,
   },
 });
 

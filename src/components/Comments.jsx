@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import moment from "moment";
 import "moment/locale/uk";
@@ -8,6 +8,8 @@ import anonymous from "../images/anonymous.jpg";
 import { deleteCommentsToFirestor } from "../redux/operations";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUserId } from "../redux/authSlice";
+import { selectIsLoading } from "../redux/picturesSlice";
+import Loader from "../utility/Loader";
 
 export default function Comments({
   avatar,
@@ -17,17 +19,28 @@ export default function Comments({
   commetnId,
   index,
   photoID,
-  idComment,
+  id,
 }) {
   const dispatch = useDispatch();
   const uid = useSelector(selectUserId);
+  const statusLoading = useSelector(selectIsLoading);
+  const [pressButton, setPressButton] = useState(null);
+
   moment.locale("uk");
   const formatDate = new Date(date);
   const time = moment(formatDate).format("HH:mm");
   const month = moment(formatDate).format("DD MMMM, YYYY");
-  const onPressTrash = async () => {
+
+  const onPressTrash = async (idComment) => {
     await dispatch(deleteCommentsToFirestor({ uid, photoID, idComment }));
   };
+
+  useEffect(() => {
+    if (!statusLoading) {
+      setPressButton(null);
+    }
+  }, [statusLoading]);
+
   return (
     <View
       style={{
@@ -53,13 +66,21 @@ export default function Comments({
             textAlign: commetnId === userId ? "left" : "right",
           }}
         >{`${month} | ${time}`}</Text>
-        <TouchableOpacity
-          style={styles.bin}
-          // disabled={!mapInput && !photoName && !fotoUri}
-          onPress={onPressTrash}
-        >
-          <Ionicons name="trash-bin-outline" size={24} color="#777555" />
-        </TouchableOpacity>
+        {pressButton !== id ? (
+          <TouchableOpacity
+            style={styles.bin}
+            onPress={() => {
+              onPressTrash(id);
+              setPressButton(id);
+            }}
+          >
+            <Ionicons name="trash-bin-outline" size={20} color="#BDBDBD" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.Loader}>
+            <Loader size={15} />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -101,4 +122,5 @@ const styles = StyleSheet.create({
     right: 10,
     bottom: 10,
   },
+  Loader: { position: "absolute", right: 2, bottom: 3 },
 });

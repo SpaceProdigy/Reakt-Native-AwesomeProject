@@ -150,12 +150,9 @@ const BottomNavigator = () => {
         name="ProfileScreen"
         component={ProfileScreen}
         options={{
-          title: "Публікації",
-          headerTintColor: "#212121",
           tabBarShowLabel: false,
-          headerTitleAlign: "center",
-          headerTitleStyle: styles.title,
-          headerStyle: styles.header,
+          headerTransparent: true,
+          title: null,
         }}
       />
     </Tabs.Navigator>

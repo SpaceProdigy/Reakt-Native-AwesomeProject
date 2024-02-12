@@ -25,6 +25,7 @@ import {
   query,
   orderBy,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
 export const deleteCommentsToFirestor = createAsyncThunk(
@@ -42,32 +43,31 @@ export const deleteCommentsToFirestor = createAsyncThunk(
           data.idComment
         )
       );
-      console.log("first step");
+
       const querySnapshot = await getDocs(
         query(
-          collection(db, "users", data.uid, "photos", data.photoId, "comments"),
+          collection(db, "users", data.uid, "photos", data.photoID, "comments"),
           orderBy("date", "desc")
         )
       );
-      console.log("querySnapshot", querySnapshot);
       const mappedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("MAOD", mappedData);
-      const ref = doc(db, "users", data.uid, "photos", data.photoId);
+
+      const ref = doc(db, "users", data.uid, "photos", data.photoID);
 
       await updateDoc(ref, {
         comments: mappedData.length,
       });
-      console.log("FILE DELETE");
+
       return {
-        idComment: data.idComment,
         photoId: data.photoID,
         comments: mappedData.length,
+        id: data.idComment,
       };
     } catch (e) {
-      console.error(error);
+      console.error(e);
       return rejectWithValue(e.message);
     }
   }
@@ -88,7 +88,7 @@ export const fetchCommentsToFirestor = createAsyncThunk(
         ...doc.data(),
       }));
 
-      return mappedData;
+      return { mappedData, id: data.id, photoId: data.photoId };
     } catch (error) {
       console.error(error);
       return rejectWithValue(error.code);
@@ -122,25 +122,11 @@ export const addCommentsToFirestor = createAsyncThunk(
         comments: mappedData.length,
       });
 
-      const refComment = doc(
-        db,
-        "users",
-        data.uid,
-        "photos",
-        data.photoId,
-        "comments",
-        comment.id
-      );
-
-      await updateDoc(refComment, {
-        idComment: comment.id,
-      });
-
       return {
         ...data.addcomment,
         comments: mappedData.length,
         photoId: data.photoId,
-        idComment: comment.id,
+        id: comment.id,
       };
     } catch (error) {
       console.error(error);
@@ -149,22 +135,36 @@ export const addCommentsToFirestor = createAsyncThunk(
   }
 );
 
-// export const updatePhotosToFirestor = createAsyncThunk(
-//   "fireStore/updatePhotosToFirestor",
-//   async (data, { rejectWithValue }) => {
-//     try {
-//       const docRef = doc(collection(db, "users", data.uid, "photos"), data.id);
-
-//       await updateDoc(docRef, data.updateData);
-//       console.log("document updated");
-
-//       // return mappedData;
-//     } catch (error) {
-//       console.error(error);
-//       return rejectWithValue(error.code);
-//     }
-//   }
-// );
+export const addLikeToFirestor = createAsyncThunk(
+  "fireStore/addLikeToFirestor",
+  async (data, { rejectWithValue }) => {
+    try {
+      const docSnap = await getDoc(
+        doc(db, "users", data.uid, "photos", data.photoID)
+      );
+      const ref = doc(db, "users", data.uid, "photos", data.photoID);
+      if (docSnap.exists()) {
+        const currentLikes = docSnap.data().likes || [];
+        const result = currentLikes.findIndex((item) => item[data.uid]);
+        if (result >= 0) {
+          currentLikes.splice(result, 1);
+        } else {
+          currentLikes.push({ [data.uid]: true });
+        }
+        await updateDoc(ref, {
+          likes: currentLikes,
+        });
+        return { currentLikes, photoId: data.photoID };
+      } else {
+        console.log("No such document!");
+        return [];
+      }
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const fetchPhotosToFirestor = createAsyncThunk(
   "fireStore/fetchPhotosToFirestor",
@@ -211,11 +211,15 @@ export const addPhotosToFirestor = createAsyncThunk(
         ...data,
         image: url,
         timestamp: currentDate,
+        likes: [],
       };
 
-      await addDoc(collection(db, "users", data.uid, "photos"), newData);
+      const newImage = await addDoc(
+        collection(db, "users", data.uid, "photos"),
+        newData
+      );
 
-      return newData;
+      return { ...newData, id: newImage.id };
     } catch (error) {
       console.error(error);
       return rejectWithValue(error);
