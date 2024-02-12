@@ -1,29 +1,42 @@
 import { TouchableOpacity, Image, View, StyleSheet } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
+import Loader from "../utility/Loader";
+import { useSelector } from "react-redux";
+import { selectIsLoading } from "../redux/authSlice";
+
 export default function AvatarBox({ selectedImage, pickImage, removeImage }) {
+  const statusLoading = useSelector(selectIsLoading);
+
   return (
     <>
       <View style={styles.avatarBox}>
         {selectedImage && (
           <Image source={{ uri: selectedImage }} style={styles.image} />
         )}
-        <TouchableOpacity
-          style={[
-            styles.iconAdd,
-            selectedImage && {
-              backgroundColor: "#fff",
-              transform: [{ rotate: "50deg" }],
-            },
-          ]}
-          onPress={!selectedImage ? pickImage : removeImage}
-        >
-          <AntDesign
-            name="pluscircleo"
-            size={25}
-            color={!selectedImage ? "#FF6C00" : "#BDBDBD"}
-          />
-        </TouchableOpacity>
+
+        {statusLoading ? (
+          <View style={styles.loader}>
+            <Loader size={25} horisontal={false} />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.iconAdd,
+              selectedImage && {
+                backgroundColor: "#fff",
+                transform: [{ rotate: "50deg" }],
+              },
+            ]}
+            onPress={!selectedImage ? pickImage : removeImage}
+          >
+            <AntDesign
+              name="pluscircleo"
+              size={25}
+              color={!selectedImage ? "#FF6C00" : "#BDBDBD"}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </>
   );
@@ -51,6 +64,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 16,
     right: -12,
+    borderRadius: 50,
+  },
+  loader: {
+    width: 25,
+    height: 25,
+    position: "absolute",
+    bottom: 16,
+    right: -12,
+    backgroundColor: "#fff",
     borderRadius: 50,
   },
 });

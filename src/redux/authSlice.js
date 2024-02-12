@@ -8,6 +8,7 @@ import {
   logOutUserThunk,
   loginUserThunk,
   registerUserThunk,
+  updateAuthThunk,
 } from "./operations";
 
 const authState = {
@@ -82,6 +83,14 @@ const authSlice = createSlice({
       .addCase(logOutUserThunk.rejected, handleRejected)
       .addCase(logOutUserThunk.fulfilled, (state) => {
         resetState(state);
+      })
+      // ----- UPDATE -----
+      .addCase(updateAuthThunk.pending, handlePending)
+      .addCase(updateAuthThunk.rejected, handleRejected)
+      .addCase(updateAuthThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.userData.photoURL = action.payload.photoURL;
       }),
 });
 

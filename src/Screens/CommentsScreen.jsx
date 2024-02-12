@@ -177,7 +177,7 @@ export default function CommentsScreen({ route }) {
                   ? `Приклад: ${phrases[numExample]} `
                   : "Коментувати..."
               }
-              placeholderTextColor={emptyComment ? "#ff5454" : "#BDBDBD"}
+              placeholderTextColor={emptyComment ? "#f97c7c9c" : "#BDBDBD"}
               maxLength={100}
             />
             {pressButton === "sendBtn" && !isLoading ? (

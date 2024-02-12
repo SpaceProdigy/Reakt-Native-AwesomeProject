@@ -283,11 +283,6 @@ export const registerUserThunk = createAsyncThunk(
         userData.password
       );
 
-      await updateProfile(auth.currentUser, {
-        displayName: userData.login ? userData.login : null,
-        photoURL: userData.photoURL ? userData.photoURL : null,
-      });
-
       const {
         accessToken,
         phoneNumber,
@@ -298,6 +293,24 @@ export const registerUserThunk = createAsyncThunk(
         isAnonymous,
         uid,
       } = user;
+
+      const imagesRef = ref(storage, `${uid}/${userData?.email}`);
+      const file = new File(
+        [await fetch(userData.photoURL).then((res) => res.blob())],
+        userData?.email
+      );
+
+      await uploadBytes(imagesRef, file, metadata);
+
+      const url = await getDownloadURL(
+        ref(storage, `${uid}/${userData?.email}`)
+      );
+
+      await updateProfile(auth.currentUser, {
+        displayName: userData.login ? userData.login : null,
+        photoURL: url ? url : null,
+      });
+
       return {
         accessToken,
         phoneNumber,
@@ -378,6 +391,42 @@ export const logOutUserThunk = createAsyncThunk(
     } catch (error) {
       console.log(error);
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateAuthThunk = createAsyncThunk(
+  "auth/updateAuth",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const imagesRef = ref(storage, `${userData.uid}/${userData?.email}`);
+      if (userData.photoURL) {
+        const file = new File(
+          [await fetch(userData.photoURL).then((res) => res.blob())],
+          userData?.email
+        );
+        await uploadBytes(imagesRef, file, metadata);
+        const url = await getDownloadURL(
+          ref(storage, `${userData.uid}/${userData?.email}`)
+        );
+        await updateProfile(auth.currentUser, {
+          photoURL: url ? url : null,
+        });
+        return {
+          photoURL: url ? url : null,
+        };
+      } else {
+        await updateProfile(auth.currentUser, {
+          photoURL: null,
+        });
+
+        return {
+          photoURL: null,
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.code);
     }
   }
 );

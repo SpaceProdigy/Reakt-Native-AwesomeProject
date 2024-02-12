@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   View,
@@ -14,8 +14,8 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import image from "../images/Photo-BG.jpg";
 import { useDispatch, useSelector } from "react-redux";
-import { logOutUserThunk } from "../redux/operations";
-import { selectData, selectIsLoading } from "../redux/authSlice";
+import { logOutUserThunk, updateAuthThunk } from "../redux/operations";
+import { selectData, selectIsLoading, selectUserId } from "../redux/authSlice";
 import { navigateToLogin } from "../utility/navigateTo";
 import { useNavigation } from "@react-navigation/native";
 import AvatarBox from "../components/AvatarBox";
@@ -29,16 +29,19 @@ export default function RegistrationScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const registerUser = useSelector(selectData);
-  const [selectedImage, setSelectedImage] = useState(
-    registerUser ? registerUser?.photoURL : null
-  );
   const user = useSelector(selectData);
+  const uid = useSelector(selectUserId);
+
   const photos = useSelector(selectPictures);
-  const statusLoading = useSelector(selectIsLoading);
 
   const removeImage = () => {
-    setSelectedImage(null);
+    dispatch(
+      updateAuthThunk({
+        photoURL: null,
+        uid,
+        email: user.email,
+      })
+    );
   };
 
   const pickImage = async () => {
@@ -54,7 +57,13 @@ export default function RegistrationScreen() {
       });
 
       if (!result.canceled) {
-        setSelectedImage(result.assets[0].uri);
+        dispatch(
+          updateAuthThunk({
+            photoURL: result.assets[0].uri,
+            uid,
+            email: user.email,
+          })
+        );
       }
     } catch (error) {
       console.error("Помилка вибору зоображення: ", error);
@@ -75,7 +84,7 @@ export default function RegistrationScreen() {
         >
           <View style={styles.wrapper}>
             <AvatarBox
-              selectedImage={selectedImage}
+              selectedImage={user?.photoURL}
               pickImage={pickImage}
               removeImage={removeImage}
             />
@@ -100,9 +109,7 @@ export default function RegistrationScreen() {
             </View>
           </View>
           <View style={styles.list}>
-            {statusLoading ? (
-              <Loader />
-            ) : photos.length > 0 ? (
+            {photos.length > 0 ? (
               <ListPosts />
             ) : (
               <Text style={styles.text}>У вас поки що немає фото</Text>

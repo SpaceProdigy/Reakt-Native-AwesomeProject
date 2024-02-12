@@ -13,6 +13,7 @@ import Loader from "../utility/Loader";
 import { Text } from "react-native";
 
 export default function PostsScreen() {
+  const [isLoading, setIsLoading] = useState(true);
   const userId = useSelector(selectUserId);
   const dispatch = useDispatch();
 
@@ -21,9 +22,18 @@ export default function PostsScreen() {
   const photos = useSelector(selectPictures);
 
   useEffect(() => {
-    if (userId) {
-      dispatch(fetchPhotosToFirestor(userId));
-    }
+    const fetchData = async () => {
+      try {
+        if (userId) {
+          await dispatch(fetchPhotosToFirestor(userId));
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, [userId]);
 
   return (
@@ -39,7 +49,7 @@ export default function PostsScreen() {
           )}
         </View>
         <View style={styles.list}>
-          {statusLoading ? (
+          {statusLoading && isLoading ? (
             <Loader />
           ) : photos.length > 0 ? (
             <ListPosts />

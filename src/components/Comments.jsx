@@ -73,6 +73,7 @@ export default function Comments({
               onPressTrash(id);
               setPressButton(id);
             }}
+            disabled={statusLoading}
           >
             <Ionicons name="trash-bin-outline" size={20} color="#BDBDBD" />
           </TouchableOpacity>
